@@ -282,8 +282,7 @@ class LogLogradouro(Base):
                            sa.ForeignKey(LogBairro.bai_nu, ondelete='CASCADE'))
 
     # bairro relacionado pelo campo 'bai_nu_ini'
-    bai_ini = orm.relationship(LogBairro, foreign_keys=[bai_nu_ini],
-                               backref=orm.backref('logradouros'))
+    bai_ini = orm.relationship(LogBairro, backref=orm.backref('logradouros'))
 
     # chave do bairro final do logradouro (obsoleto)
     bai_nu_fim = sa.Column(sa.Integer, nullable=True)

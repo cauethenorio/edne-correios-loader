@@ -11,9 +11,10 @@ def cria_engine(dialeto, servidor, usuario, senha, banco, porta='',
 
     porta = ':{}'.format(porta) if porta else porta
     driver = '+{}'.format(driver) if driver else driver
+    opcoes = '?charset=utf8&use_unicode=1' if dialeto == 'mysql' else ''
 
     string_conexao =\
-        '{dialeto}{driver}://{usuario}:{senha}@{servidor}{porta}/{banco}'\
+        '{dialeto}{driver}://{usuario}:{senha}@{servidor}{porta}/{banco}{opcoes}'\
             .format(**locals())
 
     return sa.create_engine(string_conexao, echo=echo)

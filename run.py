@@ -12,8 +12,11 @@ from . import alchemy_utils
 
 def run():
 
-    engine = alchemy_utils.cria_engine('postgresql', 'localhost', 'cauelt',
-                                       '', 'cep')
+    #engine = alchemy_utils.cria_engine('postgresql', 'localhost', 'cauelt',
+    #                                   '', 'cep')
+
+    engine = alchemy_utils.cria_engine('mysql', 'localhost', 'root',
+                                       '', 'cep2')
 
     msg.exibe('Testando conexao com o banco...', end='')
     if not alchemy_utils.testa_conexao(engine):
@@ -27,15 +30,16 @@ def run():
     dirs_encontrados = varredura.busca_recursiva('./edne2db')
     print('PRONTO\n')
 
-    if not dirs_encontrados['basico']:
-        print("Nenhum diretorio com e-DNE basico encontrado\n")
-    else:
+    if dirs_encontrados['basico']:
         print('Diretorio com e-DNE basico:')
 
         msg.identacao += 2
         msg.exibe(dirs_encontrados['basico']['caminho'])
         msg.identacao -= 2
         print('')
+
+    else:
+        print("Nenhum diretorio com e-DNE basico encontrado\n")
 
     if dirs_encontrados['delta']:
         print('Diretorios com e-DNE delta:')
@@ -46,6 +50,9 @@ def run():
 
     else:
         print('Nenhum e-DNE delta encontrado.')
+        if not dirs_encontrados['basico']:
+            print('')
+            sys.exit(2)
 
     print('')
 
