@@ -2,10 +2,12 @@
 
 import sys
 
-
 import sqlalchemy as sa
 
-from edne2db import varredura, msg, tabelas, alchemy_utils
+from . import msg
+from . import tabelas
+from . import varredura
+from . import alchemy_utils
 
 
 def run():
@@ -62,7 +64,7 @@ def run():
               .format(dirs_encontrados['basico']['caminho']))
 
         msg.identacao += 2
-        alchemy_utils.processa_tabelas(mapa_leitores, sessao)
+        alchemy_utils.processa_tabelas(mapa_leitores, sessao, envia_a_cada=2000)
         msg.identacao -= 2
 
     if dirs_encontrados['delta']:
@@ -72,7 +74,7 @@ def run():
             mapa_leitores = varredura.cria_leitores_dados(dir)
 
             msg.identacao += 2
-            alchemy_utils.processa_tabelas(mapa_leitores, sessao, envia_a_cada=50)
+            alchemy_utils.processa_tabelas(mapa_leitores, sessao, envia_a_cada=100)
             msg.identacao -= 2
 
 if __name__ == '__main__':

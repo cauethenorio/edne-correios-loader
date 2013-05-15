@@ -286,8 +286,7 @@ class LogLogradouro(Base):
                                backref=orm.backref('logradouros'))
 
     # chave do bairro final do logradouro (obsoleto)
-    bai_nu_fim = sa.Column(
-        sa.Integer, sa.ForeignKey(LogBairro.bai_nu), nullable=True)
+    bai_nu_fim = sa.Column(sa.Integer, nullable=True)
 
     # nome do logradouro
     log_no = sa.Column(sa.Unicode(100))

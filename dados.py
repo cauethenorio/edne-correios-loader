@@ -27,7 +27,6 @@ class ArquivoDados(object):
     def tem_dados(self):
         return len(self._arquivos_dados)
 
-
     def registros(self):
         for arquivo in self._arquivos_dados:
             with open(os.path.join(self._dir, arquivo), 'r') as f:

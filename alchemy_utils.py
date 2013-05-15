@@ -111,14 +111,20 @@ def processa_tabelas(mapa_leitores, sessao, envia_a_cada=1000):
                 executa(sessao, Tabela, linha)
                 contador += 1
 
+                if contador % 100 == 0:
+                    msg.exibe(msg_tabela, contador, start='\r', end='')
+
                 # define a cada quantos registros é feito o INSERT
                 # pode ser aumentado para melhorar a performance
                 # ou diminuído para reduzir a memória utilizada
                 if contador % envia_a_cada == 0:
                     sessao.flush()
-                    msg.exibe(msg_tabela, contador, start='\r', end='')
 
+            # os dados só são realmente persistidos no banco com o commit
+            # depois que todos os registros de uma tabela são inseridos
             sessao.commit()
+
+            # o numero de registros processados atualizado
             msg.exibe(msg_tabela, contador, start='\r', end='')
             print('OK')
 
