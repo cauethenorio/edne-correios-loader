@@ -62,7 +62,22 @@ localidades = (sessao.query(
     .filter(LogLocalidade.cep != None))
     #.join(LogBairro))
 
-union_query = logradouros.union(localidades)
+unidades_operacionais = (sessao.query(
+    LogUnidOper.ufe_sg.label('uf'),
+    LogLocalidade.loc_no.label('municipio'),
+    LogLocalidade.mun_nu.label('cod_ibge'),
+    LogBairro.bai_no.label('bairro'),
+    LogUnidOper.cep.label('cep'),
+    sa.sql.expression.literal_column('"localidade"').label('precisao'),
+    sa.sql.expression.null().label('tipo'),
+    sa.sql.expression.null().label('nome'),
+    sa.sql.expression.null().label('complemento')
+)
+    .filter(LogUnidOper.cep != None)
+    .join(LogBairro)
+    .join(LogLocalidade, LogUnidOper.loc_nu == LogLocalidade.loc_nu))
+
+union_query = logradouros.union(localidades).union(unidades_operacionais)
 
 from sqlalchemy.sql.expression import Executable, ClauseElement
 from sqlalchemy.ext.compiler import compiles

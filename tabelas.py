@@ -410,7 +410,7 @@ class LogGrandeUsuario(Base):
 class LogUnidOper(Base):
     """
         unidades operacionais dos correios
-        são agências proóprias ou terceirizadas, centros de distribuição etc
+        são agências próprias ou terceirizadas, centros de distribuição etc
 
         o campo 'log_nu' está vazio para as localidades não codificadas
         (loc_in_sit = 0)
