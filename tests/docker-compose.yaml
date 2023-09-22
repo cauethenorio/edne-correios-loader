@@ -1,0 +1,23 @@
+version: '3.3'
+
+name: 'dne-correios-loader'
+
+services:
+  postgres:
+    environment:
+      POSTGRES_USER: dne
+      POSTGRES_DB: dne
+      POSTGRES_PASSWORD: dne
+    image: postgres:16.0
+    ports:
+      - "5432:5432"
+
+  mysql:
+    image: mysql:8.1
+    environment:
+      MYSQL_USER: dne
+      MYSQL_DATABASE: dne
+      MYSQL_PASSWORD: dne
+      MYSQL_ROOT_PASSWORD: dne
+    ports:
+      - "3306:3306"
