@@ -29,7 +29,7 @@ class DneDatabaseWriter:
 
     insert_buffer_size = 1000
 
-    connection: Union["Connection", None]
+    connection: "Connection"
 
     def __init__(
         self,
@@ -80,7 +80,6 @@ class DneDatabaseWriter:
 
     def drop_tables(self, tables: List[str]):
         logger.info("Dropping table", extra={"indentation": 0})
-        # metadata.drop_all(self.engine, tables=[self.metadata.tables[t] for t in tables])
 
         for table in reversed(tables):
             logger.info("Dropping table %s", table, extra={"indentation": 1})

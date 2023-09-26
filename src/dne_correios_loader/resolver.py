@@ -19,7 +19,9 @@ logger = logging.getLogger(__name__)
 DELIMITED_SUBDIR = "Delimitado"
 
 
-LATEST_DNE_DOWNLOAD_URL = "https://www2.correios.com.br/sistemas/edne/download/eDNE_Basico.zip"
+LATEST_DNE_DOWNLOAD_URL = (
+    "https://www2.correios.com.br/sistemas/edne/download/eDNE_Basico.zip"
+)
 
 
 class DneResolver:
@@ -53,13 +55,17 @@ class DneResolver:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_val and self.temp_artifacts:
-            logger.warning("Something went wrong. Removing temporary files...", extra={"indentation": 0})
+            logger.warning(
+                "Something went wrong. Removing temporary files...",
+                extra={"indentation": 0},
+            )
         self.remove_temp_artifacts()
 
     def resolve_dne_source(self, dne_source: str):
         if dne_source is None:
             logger.info(
-                "No DNE source provided, the latest DNE will be downloaded from Correios website",
+                "No DNE source provided, the latest DNE will be downloaded from "
+                "Correios website",
                 extra={"indentation": 0},
             )
             dne_source = LATEST_DNE_DOWNLOAD_URL
@@ -80,13 +86,16 @@ class DneResolver:
                 with zipfile.ZipFile(dne_source, mode="r") as archive:
                     logger.debug("Source identified as ZIP file: %s", dne_source)
                     # At this point we know it's a ZIP file, but it can be one of:
-                    # 1. A ZIP file downloaded from Correios website containing two ZIP files:
+                    # 1. A ZIP file downloaded from Correios website containing two ZIP
+                    # files:
                     #    - eDNE_Basico_YYMM.zip
                     #    - eDNE_Delta_Basico_YYMM.zip
                     # 2. The eDNE_Basico_YYMM.zip file extracted from the ZIP file above
 
                     if dne_basico_filename := zip_contains_dne_basico_zip_file(archive):
-                        logger.debug("Source is as ZIP file containing a DNE Basico ZIP file")
+                        logger.debug(
+                            "Source is as ZIP file containing a DNE Basico ZIP file"
+                        )
                         # if the ZIP file contains a DNE Basico ZIP file, extract it
                         temp_dir = tempfile.mkdtemp()
                         self.temp_artifacts.append(temp_dir)
@@ -105,14 +114,19 @@ class DneResolver:
                         # the ZIP file isn't a ZIP file containing other ZIP files,
                         # so let's check if it's a DNE Basico ZIP file
 
-                        valid_dne_files = [f for f in archive.namelist() if filename_is_a_dne_basico_file(f)]
+                        valid_dne_files = [
+                            f
+                            for f in archive.namelist()
+                            if filename_is_a_dne_basico_file(f)
+                        ]
 
                         if valid_dne_files:
                             temp_dir = tempfile.mkdtemp()
                             self.temp_artifacts.append(temp_dir)
 
                             logger.debug(
-                                "Source is a DNE Basico ZIP file, extracting %s files to %s",
+                                "Source is a DNE Basico ZIP file, extracting %s "
+                                "files to %s",
                                 len(valid_dne_files),
                                 temp_dir,
                             )
@@ -149,7 +163,9 @@ class DneResolver:
         Download zipped DNE and returns the path to the downloaded file.
         """
         try:
-            path, header = urllib.request.urlretrieve(url, reporthook=self.download_report_hook)  # noqa: S310
+            path, header = urllib.request.urlretrieve(  # noqa: S310
+                url, reporthook=self.download_report_hook
+            )
         except urllib.error.URLError as e:
             msg = f"Failed to download DNE from {url}"
             raise DneResolverError(msg) from e
@@ -216,7 +232,9 @@ def filename_is_a_dne_basico_file(filename: str) -> bool:
     Check if the provided filename is part of a DNE Basico package.
     """
     name = filename.lower()
-    return name == "leiame.txt" or (name.startswith(f"{DELIMITED_SUBDIR.lower()}/") and name.endswith(".txt"))
+    return name == "leiame.txt" or (
+        name.startswith(f"{DELIMITED_SUBDIR.lower()}/") and name.endswith(".txt")
+    )
 
 
 # def extract_dne_version(dne_path: Path) -> int:

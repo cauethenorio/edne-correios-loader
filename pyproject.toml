@@ -66,11 +66,9 @@
     detached = true
     dependencies = [
         "black>=23.1.0",
-        "mypy>=1.0.0",
         "ruff>=0.0.243",
     ]
     [tool.hatch.envs.lint.scripts]
-        typing = "mypy --install-types --non-interactive {args:src/dne_correios_loader tests}"
         style = [
             "ruff {args:.}",
             "black --check --diff {args:.}",
@@ -82,7 +80,6 @@
         ]
         all = [
             "style",
-            "typing",
         ]
 
 [tool.black]

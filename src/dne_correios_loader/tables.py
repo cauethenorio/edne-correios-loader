@@ -305,8 +305,8 @@ log_faixa_cpc = Table(
 """
 Logradouro
 
-Este arquivo contém os registros das localidades codificadas por logradouro (LOC_IN_SIT=1)
-e de localidades em fase de codificação (LOC_IN_SIT=3).
+Este arquivo contém os registros das localidades codificadas por logradouro
+(LOC_IN_SIT=1) e de localidades em fase de codificação (LOC_IN_SIT=3).
 
 Para encontrar o bairro do logradouro, utilize o campo BAI_NU_INI
 (relacionamento com LOG_BAIRRO, campo BAI_NU)
@@ -355,6 +355,7 @@ log_logradouro = Table(
     ),
     Column("log_no_abrev", String(36), comment="Abreviatura do nome do logradouro"),
 )
+
 
 """
 Outras denominações do Logradouro (denominação popular, denominação anterior)
@@ -414,9 +415,11 @@ log_num_sec = Table(
 """
 Grande usuário
 
-São clientes com grande volume postal (empresas, universidades, bancos,  órgãos públicos, etc),
-O campo LOG_NU está sem conteúdo para as localidades não codificadas(LOC_IN_SIT=0), devendo
-ser utilizado o campo GRU_ENDEREÇO para  endereçamento.
+São clientes com grande volume postal (empresas, universidades, bancos,
+órgãos públicos, etc).
+
+O campo LOG_NU está sem conteúdo para as localidades não codificadas(LOC_IN_SIT=0),
+devendo ser utilizado o campo GRU_ENDEREÇO para  endereçamento.
 """
 log_grande_usuario = Table(
     "log_grande_usuario",
@@ -577,7 +580,9 @@ ect_pais = Table(
 
 """
 Tabela unificada de CEP
-Não inclusa no DNE, é populada com dados das outras tabelas depois que a importação é concluída.
+
+Não inclusa no DNE, é populada com dados das outras tabelas depois que a importação
+é concluída.
 """
 cep_unificado = Table(
     "cep_unificado",
@@ -590,6 +595,7 @@ cep_unificado = Table(
     Column("municipio_cod_ibge", Integer, nullable=False),
     Column("uf", String(2), nullable=False),
     # In some special cases, a CEP is assigned to a single address and may have a name.
-    # That happens for government agencies, large clients, some condos, Correios' own buildings, etc.
+    # That happens for government agencies, large clients, some condos,
+    # Correios' own buildings, etc.
     Column("nome", String(100)),
 )

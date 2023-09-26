@@ -3,7 +3,6 @@ from typing import Iterable, Iterator
 
 import sqlalchemy as sa
 
-
 from .tables import (
     cep_unificado,
     log_bairro,
