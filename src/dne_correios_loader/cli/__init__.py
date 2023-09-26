@@ -10,6 +10,7 @@ from dne_correios_loader.loader import DneLoader, TablesSetEnum
 from dne_correios_loader.loader import logger as loader_logger
 from dne_correios_loader.resolver import DneResolver
 from dne_correios_loader.resolver import logger as resolver_logger
+from dne_correios_loader.unified_table import logger as unified_table_logger
 
 from .logger import add_verbose_option
 
@@ -26,7 +27,9 @@ class DneResolverWithDownloadProgress(DneResolver):
 
     def download_report_hook(self, _, bs, size):
         if self.progress_bar is None:
-            self.progress_bar = click.progressbar(length=size, label="Downloading DNE file")
+            self.progress_bar = click.progressbar(
+                length=size, label="Downloading DNE file"
+            )
 
         self.progress_bar.update(bs)
 
@@ -64,7 +67,9 @@ def dne_correios_loader():
     help="Which tables to keep in the database after the import",
     default="unified-cep-only",
 )
-@add_verbose_option([logger, loader_logger, resolver_logger, dbwriter_logger])
+@add_verbose_option(
+    [logger, loader_logger, resolver_logger, dbwriter_logger, unified_table_logger]
+)
 def load(dne_source, database_url, tables, verbose):
     """
     Load DNE data into a database.
@@ -74,7 +79,7 @@ def load(dne_source, database_url, tables, verbose):
 
     try:
         DneLoaderWithProgress(database_url, dne_source=dne_source).load(
-            tables=TablesSetEnum(tables),
+            tables_set=TablesSetEnum(tables),
         )
     except Exception as e:
         if verbose:

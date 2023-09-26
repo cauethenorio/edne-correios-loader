@@ -48,4 +48,5 @@ loadable_tables = [
     LoadableDneTable("log_grande_usuario", required_for_cep_search=True),
     LoadableDneTable("log_unid_oper", required_for_cep_search=True),
     LoadableDneTable("log_faixa_uop"),
+    LoadableDneTable("cep_unificado", required_for_cep_search=True, file_glob=""),
 ]

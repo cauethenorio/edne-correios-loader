@@ -2,10 +2,10 @@ import enum
 import logging
 from typing import TYPE_CHECKING, Iterable, List, Union
 
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, func, select
 
-from .specs import LoadableDneTable, loadable_tables
 from .tables import metadata
+from .unified_table import populate_unified_table
 
 if TYPE_CHECKING:
     from sqlalchemy import Connection, MetaData
@@ -25,26 +25,18 @@ class TablesSetEnum(enum.Enum):
 
 class DneDatabaseWriter:
     engine: "Engine"
-    tables_to_populate: List[LoadableDneTable]
     metadata: "MetaData" = metadata
 
     insert_buffer_size = 1000
-
-    # used to keep track of whether the tables were created or not
-    were_tables_created = False
 
     connection: Union["Connection", None]
 
     def __init__(
         self,
         database_url: str,
-        tables: TablesSetEnum,
+        # tables: TablesSetEnum,
     ):
         self.engine = create_engine(database_url, echo=False)
-
-        self.tables_to_populate = [
-            t for t in loadable_tables if tables == TablesSetEnum.ALL_TABLES or t.required_for_cep_search
-        ]
 
     def __enter__(self):
         logger.info("Connecting to database...", extra={"indentation": 0})
@@ -53,43 +45,49 @@ class DneDatabaseWriter:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_val:
-            # if something went wrong, rollback and drop the tables
+            # if something went wrong, rollback all the changes
             self.connection.rollback()
-
-            if self.were_tables_created:
-                logger.warning("Something went wrong, dropping tables...", extra={"indentation": 0})
-                self.drop_tables()
-                self.connection.commit()
 
         else:
             self.connection.commit()
 
         self.connection.close()
 
-    def drop_tables(self):
-        tables = [self.metadata.tables[t.table_name] for t in self.tables_to_populate]
-        tables_names = "\n".join([f"- {t.table_name}" for t in self.tables_to_populate])
-
-        logger.debug("Dropping tables (if they exist):\n%s", tables_names)
-        metadata.drop_all(self.engine, tables=tables)
-        self.were_tables_created = False
-
-        return [tables, tables_names]
-
-    def drop_and_create_tables(self):
-        tables, tables_names = self.drop_tables()
+    def create_tables(self, tables: List[str]):
+        metadata_tables = [self.metadata.tables[t] for t in tables]
+        tables_names = "\n".join([f"- {t}" for t in tables])
 
         logger.info("Creating tables:\n%s", tables_names, extra={"indentation": 0})
-        metadata.create_all(self.engine, tables=tables)
-        self.were_tables_created = True
+        metadata.create_all(self.engine, tables=metadata_tables)
+
+    def clean_tables(self, tables: List[str]):
+        logger.info("Cleaning tables", extra={"indentation": 0})
+
+        # delete rows in reverse order to avoid foreign key constraint violations
+        for table_name in reversed(tables):
+            table = self.metadata.tables[table_name]
+
+            if num_rows := self.connection.execute(
+                select(func.count()).select_from(table)
+            ).scalar():
+                logger.info(
+                    "Deleting %s rows from table %s",
+                    num_rows,
+                    table.name,
+                    extra={"indentation": 1},
+                )
+                self.connection.execute(table.delete())
 
     def populate_table(self, table_name: str, lines: Iterable[list[str]]):
+        logger.info("Populating table %s", table_name, extra={"indentation": 0})
         table = self.metadata.tables[table_name]
         columns = [c.name for c in table.columns]
 
         self_referencing_fk = self.find_self_referencing_fks(table)
 
         if self_referencing_fk:
+            # if the table has a self-referencing foreign key, the rows
+            # need to be sorted in a way the ancestors are inserted first
             lines = self.sort_topologically(lines, self_referencing_fk, columns)
 
         buffer = []
@@ -104,10 +102,16 @@ class DneDatabaseWriter:
         if buffer:
             self.connection.execute(table.insert(), buffer)
 
-        logger.info('Inserted %s rows into table "%s"', count, table_name, extra={"indentation": 1})
+        logger.info(
+            'Inserted %s rows into table "%s"',
+            count,
+            table_name,
+            extra={"indentation": 1},
+        )
 
     def populate_unified_table(self):
-        pass
+        logger.info("Populating unified CEP table", extra={"indentation": 0})
+        populate_unified_table(self.connection)
 
     @staticmethod
     def find_self_referencing_fks(table) -> Union[str, None]:

@@ -1,6 +1,5 @@
 import enum
 
-import sqlalchemy as sa
 from sqlalchemy import (
     Column,
     Enum,
@@ -10,8 +9,6 @@ from sqlalchemy import (
     String,
     Table,
 )
-
-# from .view_ddl import view
 
 metadata = MetaData()
 
@@ -115,7 +112,8 @@ log_localidade = Table(
     ),
     Column(
         "loc_nu_sub",
-        ForeignKey(".loc_nu"),
+        ForeignKey("log_localidade.loc_nu", ondelete="CASCADE"),
+        index=True,
         comment="Chave da localidade de subordinação",
     ),
     Column("loc_no_abrev", String(36), comment="Abreviatura do nome da localidade"),
@@ -199,6 +197,7 @@ log_bairro = Table(
     Column(
         "loc_nu",
         ForeignKey(log_localidade.c.loc_nu),
+        index=True,
         comment="Chave da localidade",
         nullable=False,
     ),
@@ -267,6 +266,7 @@ log_cpc = Table(
     Column(
         "loc_nu",
         ForeignKey(log_localidade.c.loc_nu),
+        index=True,
         comment="Chave da localidade",
         nullable=False,
     ),
@@ -319,18 +319,21 @@ log_logradouro = Table(
     Column(
         "loc_nu",
         ForeignKey(log_localidade.c.loc_nu),
+        index=True,
         comment="Chave da localidade",
         nullable=False,
     ),
     Column(
         "bai_nu_ini",
         ForeignKey(log_bairro.c.bai_nu),
+        index=True,
         comment="Chave do bairro inicial do logradouro",
         nullable=False,
     ),
     Column(
         "bai_nu_fim",
         ForeignKey(log_bairro.c.bai_nu),
+        index=True,
         comment="Chave do bairro final do logradouro",
         nullable=True,
     ),
@@ -423,18 +426,21 @@ log_grande_usuario = Table(
     Column(
         "loc_nu",
         ForeignKey(log_localidade.c.loc_nu),
+        index=True,
         comment="Chave da localidade",
         nullable=False,
     ),
     Column(
         "bai_nu",
         ForeignKey(log_bairro.c.bai_nu),
+        index=True,
         comment="Chave do bairro",
         nullable=False,
     ),
     Column(
         "log_nu",
         ForeignKey(log_logradouro.c.log_nu),
+        index=True,
         comment="Chave do logradouro",
     ),
     Column("gru_no", String(72), comment="Nome do grande usuário", nullable=False),
@@ -478,18 +484,21 @@ log_unid_oper = Table(
     Column(
         "loc_nu",
         ForeignKey(log_localidade.c.loc_nu),
+        index=True,
         comment="Chave da localidade",
         nullable=False,
     ),
     Column(
         "bai_nu",
         ForeignKey(log_bairro.c.bai_nu),
+        index=True,
         comment="Chave do bairro",
         nullable=False,
     ),
     Column(
         "log_nu",
         ForeignKey(log_logradouro.c.log_nu),
+        index=True,
         comment="Chave do logradouro",
     ),
     Column(
@@ -567,232 +576,20 @@ ect_pais = Table(
 
 
 """
-Query unifying all tables with CEP address information
+Tabela unificada de CEP
+Não inclusa no DNE, é populada com dados das outras tabelas depois que a importação é concluída.
 """
-
-
-def get_unified_cep_query():
-    ceps_logradouros = sa.select(
-        log_logradouro.c.ufe_sg,
-        log_localidade.c.loc_no,
-        log_bairro.c.bai_no,
-        sa.case(
-            (
-                log_logradouro.c.log_sta_tlo == "S",
-                log_logradouro.c.tlo_tx + " " + log_logradouro.c.log_no,
-            ),
-            else_=log_logradouro.c.log_no,
-        ).label("log_no"),
-        log_logradouro.c.cep,
-        log_logradouro.c.log_complemento,
-        sa.literal(None).label("nome"),
-    ).select_from(
-        log_logradouro.join(log_localidade).join(
-            log_bairro,
-            onclause=log_logradouro.c.bai_nu_ini == log_bairro.c.bai_nu,
-        )
-    )
-
-    ceps_localidades = (
-        sa.select(
-            log_localidade.c.ufe_sg,
-            log_localidade.c.loc_no,
-            sa.literal(None).label("bai_no"),
-            sa.literal(None).label("log_no"),
-            log_localidade.c.cep,
-            sa.literal(None).label("log_complemento"),
-            sa.literal(None).label("nome"),
-        )
-        .select_from(log_localidade)
-        .where(
-            log_localidade.c.cep.isnot(None) & log_localidade.c.loc_nu_sub.is_(None),
-        )
-    )
-
-    ceps_localidades_subordinadas = (
-        sa.select(
-            log_localidade.c.ufe_sg,
-            localidade_subordinada.c.loc_no,
-            log_localidade.c.loc_no.label("bai_no"),
-            sa.literal(None).label("log_no"),
-            log_localidade.c.cep,
-            sa.literal(None).label("log_complemento"),
-            sa.literal(None).label("nome"),
-        )
-        .select_from(log_localidade)
-        .join(
-            localidade_subordinada,
-            onclause=log_localidade.c.loc_nu_sub == localidade_subordinada.c.loc_nu,
-        )
-        .where(
-            log_localidade.c.cep.isnot(None) & log_localidade.c.loc_nu_sub.isnot(None),
-        )
-    )
-
-    ceps_cpc = (
-        sa.select(
-            log_cpc.c.ufe_sg,
-            log_localidade.c.loc_no,
-            sa.literal(None).label("bai_no"),
-            log_cpc.c.cpc_endereco.label("log_no"),
-            log_cpc.c.cep,
-            sa.literal(None).label("log_complemento"),
-            log_cpc.c.cpc_no.label("nome"),
-        )
-        .select_from(log_cpc)
-        .join(log_localidade)
-    )
-
-    ceps_grandes_usuarios = (
-        sa.select(
-            log_grande_usuario.c.ufe_sg,
-            log_localidade.c.loc_no,
-            log_bairro.c.bai_no,
-            log_grande_usuario.c.gru_endereco.label("log_no"),
-            log_grande_usuario.c.cep,
-            sa.literal(None).label("log_complemento"),
-            log_grande_usuario.c.gru_no.label("nome"),
-        )
-        .select_from(log_grande_usuario)
-        .join(log_localidade)
-        .join(
-            log_bairro,
-            onclause=log_grande_usuario.c.bai_nu == log_bairro.c.bai_nu,
-        )
-    )
-
-    ceps_unidades_operacionais = (
-        sa.select(
-            log_unid_oper.c.ufe_sg,
-            log_localidade.c.loc_no,
-            log_bairro.c.bai_no,
-            log_unid_oper.c.uop_endereco.label("log_no"),
-            log_unid_oper.c.cep,
-            sa.literal(None).label("log_complemento"),
-            log_unid_oper.c.uop_no.label("nome"),
-        )
-        .select_from(log_unid_oper)
-        .join(log_localidade)
-        .join(log_bairro)
-    )
-
-    return ceps_logradouros.union_all(
-        ceps_localidades,
-        ceps_localidades_subordinadas,
-        ceps_cpc,
-        ceps_grandes_usuarios,
-        ceps_unidades_operacionais,
-    )
-
-
-localidade_subordinada = log_localidade.alias()
-
-"""
-View para busca de CEP
-"""
-# cep_unified_view = view(
-#     "cep_unified_view",
-#     metadata,
-unified_query = (
-    sa.select(
-        log_logradouro.c.ufe_sg,
-        log_localidade.c.loc_no,
-        log_bairro.c.bai_no,
-        sa.case(
-            (
-                log_logradouro.c.log_sta_tlo == "S",
-                log_logradouro.c.tlo_tx + " " + log_logradouro.c.log_no,
-            ),
-            else_=log_logradouro.c.log_no,
-        ).label("log_no"),
-        log_logradouro.c.cep,
-        log_logradouro.c.log_complemento,
-        sa.literal(None).label("nome"),
-    )
-    .select_from(
-        log_logradouro.join(log_localidade).join(
-            log_bairro,
-            onclause=log_logradouro.c.bai_nu_ini == log_bairro.c.bai_nu,
-        )
-    )
-    .union_all(
-        (
-            sa.select(
-                log_localidade.c.ufe_sg,
-                log_localidade.c.loc_no,
-                sa.literal(None).label("bai_no"),
-                sa.literal(None).label("log_no"),
-                log_localidade.c.cep,
-                sa.literal(None).label("log_complemento"),
-                sa.literal(None).label("nome"),
-            )
-            .select_from(log_localidade)
-            .where(
-                log_localidade.c.cep.isnot(None) & log_localidade.c.loc_nu_sub.is_(None),
-            )
-        ),
-        (
-            sa.select(
-                log_localidade.c.ufe_sg,
-                localidade_subordinada.c.loc_no,
-                log_localidade.c.loc_no.label("bai_no"),
-                sa.literal(None).label("log_no"),
-                log_localidade.c.cep,
-                sa.literal(None).label("log_complemento"),
-                sa.literal(None).label("nome"),
-            )
-            .select_from(log_localidade)
-            .join(
-                localidade_subordinada,
-                onclause=log_localidade.c.loc_nu_sub == localidade_subordinada.c.loc_nu,
-            )
-            .where(
-                log_localidade.c.cep.isnot(None) & log_localidade.c.loc_nu_sub.isnot(None),
-            )
-        ),
-        (
-            sa.select(
-                log_cpc.c.ufe_sg,
-                log_localidade.c.loc_no,
-                sa.literal(None).label("bai_no"),
-                log_cpc.c.cpc_endereco.label("log_no"),
-                log_cpc.c.cep,
-                sa.literal(None).label("log_complemento"),
-                log_cpc.c.cpc_no.label("nome"),
-            )
-            .select_from(log_cpc)
-            .join(log_localidade)
-        ),
-        (
-            sa.select(
-                log_grande_usuario.c.ufe_sg,
-                log_localidade.c.loc_no,
-                log_bairro.c.bai_no,
-                log_grande_usuario.c.gru_endereco.label("log_no"),
-                log_grande_usuario.c.cep,
-                sa.literal(None).label("log_complemento"),
-                log_grande_usuario.c.gru_no.label("nome"),
-            )
-            .select_from(log_grande_usuario)
-            .join(log_localidade)
-            .join(
-                log_bairro,
-                onclause=log_grande_usuario.c.bai_nu == log_bairro.c.bai_nu,
-            )
-        ),
-        (
-            sa.select(
-                log_unid_oper.c.ufe_sg,
-                log_localidade.c.loc_no,
-                log_bairro.c.bai_no,
-                log_unid_oper.c.uop_endereco.label("log_no"),
-                log_unid_oper.c.cep,
-                sa.literal(None).label("log_complemento"),
-                log_unid_oper.c.uop_no.label("nome"),
-            )
-            .select_from(log_unid_oper)
-            .join(log_localidade)
-            .join(log_bairro)
-        ),
-    )
+cep_unificado = Table(
+    "cep_unificado",
+    metadata,
+    Column("cep", String(8), primary_key=True),
+    Column("logradouro", String(100)),
+    Column("complemento", String(100)),
+    Column("bairro", String(72)),
+    Column("municipio", String(72), nullable=False),
+    Column("municipio_cod_ibge", Integer, nullable=False),
+    Column("uf", String(2), nullable=False),
+    # In some special cases, a CEP is assigned to a single address and may have a name.
+    # That happens for government agencies, large clients, some condos, Correios' own buildings, etc.
+    Column("nome", String(100)),
 )

@@ -53,7 +53,7 @@ class DneResolver:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_val and self.temp_artifacts:
-            logger.warning("Removing temporary files...", extra={"indentation": 0})
+            logger.warning("Something went wrong. Removing temporary files...", extra={"indentation": 0})
         self.remove_temp_artifacts()
 
     def resolve_dne_source(self, dne_source: str):
@@ -131,7 +131,7 @@ class DneResolver:
 
         if (dne_dir := Path(dne_source)).is_dir():
             # assert all the data files are present
-            for loadable in loadable_tables:
+            for loadable in [t for t in loadable_tables if t.file_glob != ""]:
                 if not any(dne_dir.glob(loadable.file_glob)):
                     if (delimited_subdir := (dne_dir / DELIMITED_SUBDIR)).is_dir():
                         return self.resolve_dne_source(str(delimited_subdir))
