@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class TablesSetEnum(enum.Enum):
+class TableSetEnum(enum.Enum):
     """
     Options to control which tables to keep in the database after the import.
     """
@@ -77,6 +77,14 @@ class DneDatabaseWriter:
                     extra={"indentation": 1},
                 )
                 self.connection.execute(table.delete())
+
+    def drop_tables(self, tables: List[str]):
+        logger.info("Dropping table", extra={"indentation": 0})
+        # metadata.drop_all(self.engine, tables=[self.metadata.tables[t] for t in tables])
+
+        for table in reversed(tables):
+            logger.info("Dropping table %s", table, extra={"indentation": 1})
+            self.metadata.tables[table].drop(self.connection)
 
     def populate_table(self, table_name: str, lines: Iterable[list[str]]):
         logger.info("Populating table %s", table_name, extra={"indentation": 0})

@@ -6,7 +6,7 @@ import click
 
 from dne_correios_loader.__about__ import __version__
 from dne_correios_loader.dbwriter import logger as dbwriter_logger
-from dne_correios_loader.loader import DneLoader, TablesSetEnum
+from dne_correios_loader.loader import DneLoader, TableSetEnum
 from dne_correios_loader.loader import logger as loader_logger
 from dne_correios_loader.resolver import DneResolver
 from dne_correios_loader.resolver import logger as resolver_logger
@@ -61,7 +61,7 @@ def dne_correios_loader():
 @click.option(
     "--tables",
     type=click.Choice(
-        [option.value for option in list(TablesSetEnum)],
+        [option.value for option in list(TableSetEnum)],
         case_sensitive=False,
     ),
     help="Which tables to keep in the database after the import",
@@ -79,7 +79,7 @@ def load(dne_source, database_url, tables, verbose):
 
     try:
         DneLoaderWithProgress(database_url, dne_source=dne_source).load(
-            tables_set=TablesSetEnum(tables),
+            table_set=TableSetEnum(tables)
         )
     except Exception as e:
         if verbose:

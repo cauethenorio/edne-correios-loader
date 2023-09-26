@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import Iterable, Type
 
-from .dbwriter import DneDatabaseWriter, TablesSetEnum
+from .dbwriter import DneDatabaseWriter, TableSetEnum
 from .resolver import DneResolver
 from .specs import loadable_tables
 
@@ -27,15 +27,11 @@ class DneLoader:
         self.database_url = database_url
         self.dne_source = dne_source
 
-    def load(
-        self,
-        *,
-        tables_set: TablesSetEnum = TablesSetEnum.UNIFIED_CEP_ONLY,
-    ):
+    def load(self, table_set: TableSetEnum = TableSetEnum.UNIFIED_CEP_ONLY):
         tables = [
             t.table_name
             for t in loadable_tables
-            if tables_set == TablesSetEnum.ALL_TABLES or t.required_for_cep_search
+            if table_set == TableSetEnum.ALL_TABLES or t.required_for_cep_search
         ]
 
         # connect to database to ensure the URL is valid
@@ -63,6 +59,10 @@ class DneLoader:
                     database_writer.populate_table(loadable_table.table_name, data)
 
             database_writer.populate_unified_table()
+
+            if table_set == TableSetEnum.UNIFIED_CEP_ONLY:
+                tables_to_drop = [t for t in tables if t != "cep_unificado"]
+                database_writer.drop_tables(tables_to_drop)
 
 
 class TableFilesReader:
