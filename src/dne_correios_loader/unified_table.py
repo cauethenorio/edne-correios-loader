@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def cep_unificado_insert_from(rows: "sa.Select"):
-    return cep_unificado.insert().from_select([c.name for c in rows.columns], rows)
+    return cep_unificado.insert().from_select(rows.selected_columns, rows.subquery())
 
 
 def normalize_logradouro(rows: "sa.CursorResult") -> Iterator[dict]:
@@ -128,7 +128,7 @@ def select_cpc_ceps() -> "sa.Select":
                 log_localidade.c.mun_nu,
             ).label("municipio_cod_ibge"),
             log_cpc.c.ufe_sg.label("uf"),
-            ("CPC " + log_cpc.c.cpc_no).label("nome"),
+            log_cpc.c.cpc_no.label("nome"),
         )
         .select_from(log_cpc)
         .join(log_localidade)
@@ -197,7 +197,7 @@ def select_unidades_operacionais_ceps() -> "sa.Select":
     )
 
 
-def populate_unified_table(conn: sa.Connection):
+def populate_unified_table(conn: sa.Connection, insert_batch_size: int = 500):
     """
     Query unifying rows from all tables with CEP address information
     """
@@ -216,7 +216,7 @@ def populate_unified_table(conn: sa.Connection):
         conn.execute(cep_unificado_insert_from(select_stmt))
 
         inserted = conn.execute(
-            sa.select(sa.func.count()).select_from(select_stmt)
+            sa.select(sa.func.count()).select_from(select_stmt.subquery())
         ).scalar()
 
         logger.info(
@@ -244,11 +244,13 @@ def populate_unified_table(conn: sa.Connection):
         )
 
         cep_unificado_insert_in_batches(
-            conn, normalize_logradouro(conn.execute(select_stmt))
+            conn,
+            normalize_logradouro(conn.execute(select_stmt).yield_per(1000)),
+            batch_size=insert_batch_size,
         )
 
         inserted = conn.execute(
-            sa.select(sa.func.count()).select_from(select_stmt)
+            sa.select(sa.func.count()).select_from(select_stmt.subquery())
         ).scalar()
 
         logger.info(

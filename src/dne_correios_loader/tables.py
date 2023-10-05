@@ -47,6 +47,9 @@ class SituacaoLocalidadeEnum(enum.Enum):
     3 - Localidade em fase de codificação ao nível de Logradouro
     """
 
+    def __str__(self):
+        return self.value
+
     NAO_CODIFICADA = "0"
     CODIFICADA = "1"
     DISTRITO = "2"
@@ -57,6 +60,9 @@ class TipoLocalidadeEnum(enum.Enum):
     """
     Tipo de localidade
     """
+
+    def __str__(self):
+        return self.value
 
     DISTRITO = "D"
     MUNICIPIO = "M"
@@ -354,6 +360,7 @@ log_logradouro = Table(
         comment="Indicador de utilização do tipo de logradouro (S/N)",
     ),
     Column("log_no_abrev", String(36), comment="Abreviatura do nome do logradouro"),
+    info={"file_glob": "LOG_LOGRADOURO_*.TXT"},
 )
 
 
@@ -598,4 +605,5 @@ cep_unificado = Table(
     # That happens for government agencies, large clients, some condos,
     # Correios' own buildings, etc.
     Column("nome", String(100)),
+    info={"unified_table": True},
 )

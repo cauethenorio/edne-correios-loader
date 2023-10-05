@@ -1,42 +1,22 @@
-import enum
 import logging
-from typing import TYPE_CHECKING, Iterable, List, Union
+from typing import Iterable, List, Union
 
-from sqlalchemy import Engine, create_engine, func, select
+import sqlalchemy as sa
 
 from .tables import metadata
 from .unified_table import populate_unified_table
 
-if TYPE_CHECKING:
-    from sqlalchemy import Connection, MetaData
-
 logger = logging.getLogger(__name__)
 
 
-class TableSetEnum(enum.Enum):
-    """
-    Options to control which tables to keep in the database after the import.
-    """
-
-    UNIFIED_CEP_ONLY = "unified-cep-only"
-    CEP_TABLES = "cep-tables"
-    ALL_TABLES = "all"
-
-
 class DneDatabaseWriter:
-    engine: "Engine"
-    metadata: "MetaData" = metadata
-
+    engine: sa.Engine
+    connection: sa.Connection
+    metadata: sa.MetaData = metadata
     insert_buffer_size = 1000
 
-    connection: "Connection"
-
-    def __init__(
-        self,
-        database_url: str,
-        # tables: TablesSetEnum,
-    ):
-        self.engine = create_engine(database_url, echo=False)
+    def __init__(self, database_url: str):
+        self.engine = sa.create_engine(database_url, echo=False)
 
     def __enter__(self):
         logger.info("Connecting to database...", extra={"indentation": 0})
@@ -68,7 +48,7 @@ class DneDatabaseWriter:
             table = self.metadata.tables[table_name]
 
             if num_rows := self.connection.execute(
-                select(func.count()).select_from(table)
+                sa.select(sa.func.count()).select_from(table)
             ).scalar():
                 logger.info(
                     "Deleting %s rows from table %s",
@@ -79,11 +59,12 @@ class DneDatabaseWriter:
                 self.connection.execute(table.delete())
 
     def drop_tables(self, tables: List[str]):
-        logger.info("Dropping table", extra={"indentation": 0})
+        if tables:
+            logger.info("Dropping tables", extra={"indentation": 0})
 
-        for table in reversed(tables):
-            logger.info("Dropping table %s", table, extra={"indentation": 1})
-            self.metadata.tables[table].drop(self.connection)
+            for table in reversed(tables):
+                logger.info("Dropping table %s", table, extra={"indentation": 1})
+                self.metadata.tables[table].drop(self.connection, checkfirst=True)
 
     def populate_table(self, table_name: str, lines: Iterable[list[str]]):
         logger.info("Populating table %s", table_name, extra={"indentation": 0})
@@ -99,10 +80,10 @@ class DneDatabaseWriter:
 
         buffer = []
 
-        for count, line in enumerate(lines):  # noqa: B007
+        for count, line in enumerate(lines, start=1):  # noqa: B007
             buffer.append(dict(zip(columns, line, strict=True)))
 
-            if len(buffer) > self.insert_buffer_size:
+            if len(buffer) >= self.insert_buffer_size:
                 self.connection.execute(table.insert(), buffer)
                 buffer = []
 

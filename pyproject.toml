@@ -44,7 +44,24 @@
     dependencies = [
         "coverage[toml]>=6.5",
         "pytest",
+        # use mock/patch as fixtures
+        "pytest-mock",
+        # generate sample data
+        "faker",
+        # improve debug prompt
         "pdbpp",
+        # read docker container data in tests
+        "python-dotenv",
+        # connect to postgres during tests
+        "psycopg2-binary",
+        # connect to mysql during tests
+        "pymysql",
+        # required by pymysql
+        "cryptography",
+        # run postgres container on demand during tests
+        "testcontainers-postgres",
+        # run mysql container on demand during tests
+        "testcontainers-mysql",
     ]
 
     [tool.hatch.envs.default.scripts]
@@ -52,7 +69,7 @@
         test-cov = "coverage run -m pytest {args:tests}"
         cov-report = [
             "- coverage combine",
-            "coverage report",
+            "coverage html",
         ]
         cov = [
             "test-cov",
@@ -89,7 +106,7 @@
 [tool.ruff]
     target-version = "py37"
     line-length = 88
-    src = ["src"]
+    src = ["src", "tests"]
     select = [
         "A",
         "ARG",
@@ -136,6 +153,8 @@
         "FBT003",
         # Ignore checks for possible passwords
         "S105", "S106", "S107",
+        # Allow nested context manager as they are easier to read
+        "SIM117",
         # Ignore complexity
         "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
         # Allow relative imports
@@ -146,6 +165,8 @@
         "F401",
         # Don't touch unused variables
         "F841",
+        # Don't touch unused function arguments
+        "ARG001"
     ]
 
     [tool.ruff.isort]
@@ -164,6 +185,7 @@
     parallel = true
     omit = [
         "src/dne_correios_loader/__about__.py",
+        "tests/conftest.py",
     ]
 
 [tool.coverage.paths]

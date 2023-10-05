@@ -40,7 +40,7 @@ class ClickHandler(logging.Handler):
                 "CRITICAL",
             ]
             click.echo(msg, err=is_error)
-        except Exception:
+        except Exception:  # noqa: no cover
             self.handleError(record)
 
 

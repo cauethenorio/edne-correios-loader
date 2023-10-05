@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from typing import Optional
@@ -5,11 +6,13 @@ from typing import Optional
 import click
 
 from dne_correios_loader.__about__ import __version__
+from dne_correios_loader.cep_querier import CepQuerier
 from dne_correios_loader.dbwriter import logger as dbwriter_logger
-from dne_correios_loader.loader import DneLoader, TableSetEnum
+from dne_correios_loader.loader import DneLoader
 from dne_correios_loader.loader import logger as loader_logger
 from dne_correios_loader.resolver import DneResolver
 from dne_correios_loader.resolver import logger as resolver_logger
+from dne_correios_loader.table_set import TableSetEnum
 from dne_correios_loader.unified_table import logger as unified_table_logger
 
 from .logger import add_verbose_option
@@ -20,18 +23,22 @@ logger = logging.getLogger(__name__)
 class DneResolverWithDownloadProgress(DneResolver):
     progress_bar: Optional[click.progressbar] = None
 
-    def download_dne(self, url: str) -> str:
-        path = super().download_dne(url)
-        self.progress_bar.render_finish()
-        return path
+    def download_report_hook(self, read, total, hook_type):
+        if total == -1:
+            return
 
-    def download_report_hook(self, _, bs, size):
-        if self.progress_bar is None:
+        if hook_type == "start":
             self.progress_bar = click.progressbar(
-                length=size, label="Downloading DNE file"
+                length=total, label="Downloading DNE file"
             )
+            self.progress_bar.render_progress()
 
-        self.progress_bar.update(bs)
+        if read:
+            self.progress_bar.update(read)
+
+        if hook_type == "finish":
+            self.progress_bar.finish()
+            self.progress_bar.render_finish()
 
 
 class DneLoaderWithProgress(DneLoader):
@@ -41,7 +48,7 @@ class DneLoaderWithProgress(DneLoader):
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(version=__version__, prog_name="DNE Correios Loader")
 def dne_correios_loader():
-    ...
+    ...  # pragma: no cover
 
 
 @dne_correios_loader.command()
@@ -90,9 +97,31 @@ def load(dne_source, database_url, tables, verbose):
         sys.exit(1)
 
 
+@click.option(
+    "-db",
+    "--database-url",
+    help="Database URL where the DNE data will be imported to",
+    required=True,
+    metavar="<url>",
+)
+@click.argument("cep")
 @dne_correios_loader.command()
-def query_cep():
+def query_cep(database_url, cep):
     """
-    Query a CEP from the database.
+    Query a CEP from the database to ensure it was correctly populated.
     """
-    click.echo("query cep")
+    try:
+        cep_address = CepQuerier(database_url).query(cep)
+    except Exception as e:
+        logger.error(e)  # noqa: TRY400
+        sys.exit(1)
+
+    if cep_address:
+        click.echo(
+            click.style(
+                json.dumps(cep_address, ensure_ascii=False, indent=2), fg="green"
+            )
+        )
+    else:
+        click.echo(click.style("CEP not found", fg="blue"), err=True)
+        sys.exit(3)
