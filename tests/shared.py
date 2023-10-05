@@ -46,7 +46,10 @@ class CreateTemporaryDneDirectory:
 @contextlib.contextmanager
 def create_inner_dne_zip_file() -> str:
     with CreateTemporaryDneDirectory() as dne_dir:
-        with tempfile.TemporaryDirectory() as tmpdir, contextlib.chdir(tmpdir):
+        with tempfile.TemporaryDirectory() as tmpdir:
             yield shutil.make_archive(
-                "dne", "zip", root_dir=dne_dir.outerdir, base_dir="delimitado"
+                str(Path(tmpdir) / "dne"),
+                "zip",
+                root_dir=dne_dir.outerdir,
+                base_dir="delimitado",
             )

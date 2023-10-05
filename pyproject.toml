@@ -7,7 +7,7 @@
     dynamic = ["version"]
     description = "Load Correios' DNE Basico text files into your database to enable CEP search"
     readme = "README.md"
-    requires-python = ">=3.7"
+    requires-python = ">=3.9"
     license = "MIT"
     keywords = ["Correios", "CEP", "endereço", "address", "DNE", "eDNE", "Brasil"]
     authors = [
@@ -16,8 +16,6 @@
     classifiers = [
         "Development Status :: 4 - Beta",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -77,7 +75,7 @@
         ]
 
 [[tool.hatch.envs.all.matrix]]
-    python = ["3.7", "3.8", "3.9", "3.10", "3.11"]
+    python = ["3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.envs.lint]
     detached = true
@@ -100,11 +98,11 @@
         ]
 
 [tool.black]
-    target-version = ["py37"]
+    target-version = ["py39"]
     line-length = 88
 
 [tool.ruff]
-    target-version = "py37"
+    target-version = "py39"
     line-length = 88
     src = ["src", "tests"]
     select = [

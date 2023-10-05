@@ -37,9 +37,9 @@ class DneResolver:
     Returns the path to the resolved DNE folder.
     """
 
-    dne_source: str | None
+    dne_source: Union[str, None]
 
-    def __init__(self, dne_source: str | None = None):
+    def __init__(self, dne_source: Union[str, None] = None):
         self.dne_source = dne_source
 
         # keep track of temporary files to be removed
@@ -209,7 +209,7 @@ class DneResolver:
 
             if Path(to_remove).is_file():
                 logger.debug("Removing temporary file %s", to_remove)
-                Path.unlink(to_remove)
+                Path(to_remove).unlink()
             else:
                 logger.debug("Removing temporary directory %s", to_remove)
                 shutil.rmtree(to_remove)

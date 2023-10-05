@@ -13,14 +13,14 @@ class TableSetEnum(enum.Enum):
     CEP_TABLES = "cep-tables"
     ALL_TABLES = "all"
 
-    @enum.property
+    @property
     def to_populate(self) -> List[str]:
         if self.value == "all":
             return [t.name for t in metadata.sorted_tables]
 
         return get_cep_tables()
 
-    @enum.property
+    @property
     def to_drop(self) -> List[str]:
         if self.value == "unified-cep-only":
             return [

@@ -66,7 +66,7 @@ class DneDatabaseWriter:
                 logger.info("Dropping table %s", table, extra={"indentation": 1})
                 self.metadata.tables[table].drop(self.connection, checkfirst=True)
 
-    def populate_table(self, table_name: str, lines: Iterable[list[str]]):
+    def populate_table(self, table_name: str, lines: Iterable[List[str]]):
         logger.info("Populating table %s", table_name, extra={"indentation": 0})
         table = self.metadata.tables[table_name]
         columns = [c.name for c in table.columns]
@@ -81,7 +81,7 @@ class DneDatabaseWriter:
         buffer = []
 
         for count, line in enumerate(lines, start=1):  # noqa: B007
-            buffer.append(dict(zip(columns, line, strict=True)))
+            buffer.append(dict(zip(columns, line)))
 
             if len(buffer) >= self.insert_buffer_size:
                 self.connection.execute(table.insert(), buffer)
@@ -114,8 +114,8 @@ class DneDatabaseWriter:
 
     @staticmethod
     def sort_topologically(
-        lines: Iterable[list[str]], self_referencing_fk: str, columns: list[str]
-    ) -> Iterable[list[str]]:
+        lines: Iterable[List[str]], self_referencing_fk: str, columns: List[str]
+    ) -> Iterable[List[str]]:
         from graphlib import TopologicalSorter
 
         fk_index = columns.index(self_referencing_fk)
