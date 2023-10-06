@@ -1,6 +1,6 @@
 import pytest
 
-from dne_correios_loader.table_set import (
+from edne_correios_loader.table_set import (
     TableSetEnum,
     get_cep_tables,
     get_table_files_glob,

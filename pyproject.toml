@@ -3,9 +3,9 @@
     build-backend = "hatchling.build"
 
 [project]
-    name = "dne-correios-loader"
+    name = "edne-correios-loader"
     dynamic = ["version"]
-    description = "Load Correios' DNE Basico text files into your database to enable CEP search"
+    description = "Load Brazilian Correios' e-DNE Basico text files into your database to enable CEP search"
     readme = "README.md"
     requires-python = ">=3.9"
     license = "MIT"
@@ -19,6 +19,7 @@
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ]
@@ -28,15 +29,25 @@
     ]
 
     [project.urls]
-        Documentation = "https://github.com/cauethenorio/dne-correios-loader#readme"
-        Issues = "https://github.com/cauethenorio/dne-correios-loader/issues"
-        Source = "https://github.com/cauethenorio/dne-correios-loader"
+        Documentation = "https://github.com/cauethenorio/edne-correios-loader#readme"
+        Issues = "https://github.com/cauethenorio/edne-correios-loader/issues"
+        Source = "https://github.com/cauethenorio/edne-correios-loader"
 
     [project.scripts]
-        dne-correios-loader = "dne_correios_loader.cli:dne_correios_loader"
+        edne-correios-loader = "edne_correios_loader.cli:edne_correios_loader"
+
+    [project.optional-dependencies]
+        postgresql = ["psycopg2-binary"]
+        mysql = ["pymysql"]
 
 [tool.hatch.version]
-    path = "src/dne_correios_loader/__about__.py"
+    path = "src/edne_correios_loader/__about__.py"
+
+[tool.hatch.build.targets.sdist]
+    exclude = ["/tests", '.gitignore', '.rtx.toml']
+
+[tool.hatch.build.targets.wheel]
+    packages = ["src/edne_correios_loader"]
 
 [tool.hatch.envs.default]
     dependencies = [
@@ -168,7 +179,7 @@
     ]
 
     [tool.ruff.isort]
-        known-first-party = ["dne_correios_loader"]
+        known-first-party = ["edne_correios_loader"]
 
     [tool.ruff.flake8-tidy-imports]
         ban-relative-imports = "all"
@@ -178,17 +189,20 @@
         "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.coverage.run]
-    source_pkgs = ["dne_correios_loader", "tests"]
+    source_pkgs = ["edne_correios_loader", "tests"]
     branch = true
     parallel = true
     omit = [
-        "src/dne_correios_loader/__about__.py",
+        "src/edne_correios_loader/__about__.py",
         "tests/conftest.py",
     ]
 
 [tool.coverage.paths]
-    dne_correios_loader = ["src/dne_correios_loader", "*/dne-correios-loader/src/dne_correios_loader"]
-    tests = ["tests", "*/dne-correios-loader/tests"]
+    edne_correios_loader = [
+        "src/edne_correios_loader",
+        "*/edne-correios-loader/src/edne_correios_loader"
+    ]
+    tests = ["tests", "*/edne-correios-loader/tests"]
 
 [tool.coverage.report]
     exclude_lines = [

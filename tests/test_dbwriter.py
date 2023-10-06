@@ -1,9 +1,9 @@
 import pytest
 import sqlalchemy as sa
 
-from dne_correios_loader import TableSetEnum
-from dne_correios_loader.dbwriter import DneDatabaseWriter
-from dne_correios_loader.tables import log_bairro, log_localidade, log_logradouro
+from edne_correios_loader import TableSetEnum
+from edne_correios_loader.dbwriter import DneDatabaseWriter
+from edne_correios_loader.tables import log_bairro, log_localidade, log_logradouro
 
 
 def reflect_metadata(engine):
@@ -190,7 +190,7 @@ def test_dbwriter_clean_tables_correctly(
 
 def test_dbwriter_calls_populate_unified_table(mocker, connection_url):
     populate_unified_table = mocker.patch(
-        "dne_correios_loader.dbwriter.populate_unified_table"
+         "edne_correios_loader.dbwriter.populate_unified_table"
     )
 
     with DneDatabaseWriter(connection_url) as db_writer:

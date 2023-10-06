@@ -1,9 +1,7 @@
 import contextlib
 import os
-import shutil
 import tempfile
 from http.client import HTTPResponse
-from pathlib import Path
 
 import pytest
 import sqlalchemy as sa
@@ -143,7 +141,7 @@ def stringify_row():
 @pytest.fixture
 def mock_urlopen(mocker):
     some_valid_url = "https://some-valid-url"
-    urlopen = mocker.patch("dne_correios_loader.resolver.urllib.request.urlopen")
+    urlopen = mocker.patch( "edne_correios_loader.resolver.urllib.request.urlopen")
 
     @contextlib.contextmanager
     def mock_urlopen_fn(content, *, url=some_valid_url, with_content_length=True):

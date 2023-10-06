@@ -1,6 +1,6 @@
 class BaseDneLoaderError(Exception):
     """
-    Base exception for dne_correios_loader
+    Base exception for edne_correios_loader
     """
 
 

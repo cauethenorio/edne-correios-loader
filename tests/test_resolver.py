@@ -9,8 +9,8 @@ from zipfile import ZipFile
 
 import pytest
 
-from dne_correios_loader.exc import DneResolverError
-from dne_correios_loader.resolver import LATEST_DNE_DOWNLOAD_URL, DneResolver
+from edne_correios_loader.exc import DneResolverError
+from edne_correios_loader.resolver import LATEST_DNE_DOWNLOAD_URL, DneResolver
 
 from .shared import TEST_DNE_DIR, create_inner_dne_zip_file
 

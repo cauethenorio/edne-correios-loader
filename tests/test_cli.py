@@ -4,25 +4,25 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from dne_correios_loader.cli import (
+from edne_correios_loader.cli import (
     DneResolverWithDownloadProgress,
-    dne_correios_loader,
+    edne_correios_loader,
     load,
     query_cep,
 )
-from dne_correios_loader.table_set import TableSetEnum
+from edne_correios_loader.table_set import TableSetEnum
 
 from .shared import create_inner_dne_zip_file
 
 
 @pytest.fixture
 def mocked_dne_loader(mocker):
-    return mocker.patch("dne_correios_loader.cli.DneLoaderWithProgress")
+    return mocker.patch( "edne_correios_loader.cli.DneLoaderWithProgress")
 
 
 @pytest.fixture
 def mocked_cep_querier(mocker):
-    return mocker.patch("dne_correios_loader.cli.CepQuerier")
+    return mocker.patch( "edne_correios_loader.cli.CepQuerier")
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def test_cli_dner_resolver_with_download_progress_works_without_content_length(
 
 def test_cli_show_help_message_when_no_subcommand_is_specified():
     runner = CliRunner()
-    result = runner.invoke(dne_correios_loader)
+    result = runner.invoke(edne_correios_loader)
 
     assert result.exit_code == 0
     assert "Usage: " in result.output

@@ -3,8 +3,8 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from dne_correios_loader.table_set import TableSetEnum, get_table_files_glob
-from dne_correios_loader.resolver import DELIMITED_SUBDIR
+from edne_correios_loader.table_set import TableSetEnum, get_table_files_glob
+from edne_correios_loader.resolver import DELIMITED_SUBDIR
 
 TEST_DNE_DIR = Path(Path("tests/data/dne").absolute())
 

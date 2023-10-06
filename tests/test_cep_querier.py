@@ -1,8 +1,8 @@
 import pytest
 import sqlalchemy as sa
 
-from dne_correios_loader import CepQuerier
-from dne_correios_loader.tables import metadata
+from edne_correios_loader import CepQuerier
+from edne_correios_loader.tables import metadata
 
 cep1 = {
     "cep": "11111111",

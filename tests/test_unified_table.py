@@ -1,11 +1,11 @@
 import sqlalchemy as sa
 
-from dne_correios_loader.tables import (
+from edne_correios_loader.tables import (
     SituacaoLocalidadeEnum,
     TipoLocalidadeEnum,
     metadata,
 )
-from dne_correios_loader.unified_table import populate_unified_table
+from edne_correios_loader.unified_table import populate_unified_table
 
 
 def test_populate_unified_table_populates_correctly(connection_url):

@@ -1,6 +1,6 @@
 from operator import itemgetter
 
-from dne_correios_loader.tables import SituacaoLocalidadeEnum, TipoLocalidadeEnum
+from edne_correios_loader.tables import SituacaoLocalidadeEnum, TipoLocalidadeEnum
 
 
 def generate_localidade(faker):

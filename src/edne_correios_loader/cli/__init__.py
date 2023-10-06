@@ -5,15 +5,15 @@ from typing import Optional
 
 import click
 
-from dne_correios_loader.__about__ import __version__
-from dne_correios_loader.cep_querier import CepQuerier
-from dne_correios_loader.dbwriter import logger as dbwriter_logger
-from dne_correios_loader.loader import DneLoader
-from dne_correios_loader.loader import logger as loader_logger
-from dne_correios_loader.resolver import DneResolver
-from dne_correios_loader.resolver import logger as resolver_logger
-from dne_correios_loader.table_set import TableSetEnum
-from dne_correios_loader.unified_table import logger as unified_table_logger
+from edne_correios_loader.__about__ import __version__
+from edne_correios_loader.cep_querier import CepQuerier
+from edne_correios_loader.dbwriter import logger as dbwriter_logger
+from edne_correios_loader.loader import DneLoader
+from edne_correios_loader.loader import logger as loader_logger
+from edne_correios_loader.resolver import DneResolver
+from edne_correios_loader.resolver import logger as resolver_logger
+from edne_correios_loader.table_set import TableSetEnum
+from edne_correios_loader.unified_table import logger as unified_table_logger
 
 from .logger import add_verbose_option
 
@@ -47,11 +47,11 @@ class DneLoaderWithProgress(DneLoader):
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(version=__version__, prog_name="DNE Correios Loader")
-def dne_correios_loader():
+def edne_correios_loader():
     ...  # pragma: no cover
 
 
-@dne_correios_loader.command()
+@edne_correios_loader.command()
 @click.option(
     "-s",
     "--dne-source",
@@ -105,7 +105,7 @@ def load(dne_source, database_url, tables, verbose):
     metavar="<url>",
 )
 @click.argument("cep")
-@dne_correios_loader.command()
+@edne_correios_loader.command()
 def query_cep(database_url, cep):
     """
     Query a CEP from the database to ensure it was correctly populated.
