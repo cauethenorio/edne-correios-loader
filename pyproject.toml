@@ -50,6 +50,7 @@
     packages = ["src/edne_correios_loader"]
 
 [tool.hatch.envs.default]
+    python = "3.11"
     dependencies = [
         "coverage[toml]>=6.5",
         "pytest",
