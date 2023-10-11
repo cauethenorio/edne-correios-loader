@@ -49,5 +49,5 @@ def create_inner_dne_zip_file() -> str:
                 str(Path(tmpdir) / "dne"),
                 "zip",
                 root_dir=dne_dir.outerdir,
-                base_dir="delimitado",
+                base_dir=DELIMITED_SUBDIR,
             )
