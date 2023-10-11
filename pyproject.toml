@@ -57,24 +57,15 @@
     dependencies = [
         "coverage[toml]>=6.5",
         "pytest",
-        # use mock/patch as fixtures
-        "pytest-mock",
-        # generate sample data
-        "faker",
-        # improve debug prompt
-        "pdbpp",
-        # read docker container data in tests
-        "python-dotenv",
-        # connect to postgres during tests
-        "psycopg2-binary",
-        # connect to mysql during tests
-        "pymysql",
-        # required by pymysql
-        "cryptography",
-        # run postgres container on demand during tests
-        "testcontainers-postgres",
-        # run mysql container on demand during tests
-        "testcontainers-mysql",
+        "pytest-mock", # use mock/patch as fixtures
+        "faker", # generate sample data
+        "pdbpp", # improve debug prompt
+        "python-dotenv", # read docker container data in tests
+        "psycopg-binary", # connect to postgres during tests
+        "pymysql", # connect to mysql during tests
+        "cryptography", # required by pymysql
+        "testcontainers-postgres", # run postgres container on demand during tests
+        "testcontainers-mysql", # run mysql container on demand during tests
     ]
 
     [tool.hatch.envs.default.scripts]
