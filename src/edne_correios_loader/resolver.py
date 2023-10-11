@@ -130,7 +130,7 @@ class DneResolver:
                     self.temp_artifacts.append(temp_dir)
 
                     logger.debug(
-                        "Source is a DNE Basico ZIP file, extracting %s " "files to %s",
+                        "Source is a DNE Basico ZIP file, extracting %s files to %s",
                         len(valid_dne_files),
                         temp_dir,
                     )
