@@ -385,7 +385,7 @@ Para executar os testes, é necessário a instalação do [Docker](https://www.d
   ```
 3. Execute os testes usando o `hatch`:
   ```shell
-  hatch run test
+  hatch run all:test
   ``` 
 
 ## Licença

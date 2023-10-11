@@ -116,7 +116,16 @@ class DneDatabaseWriter:
     def sort_topologically(
         lines: Iterable[List[str]], self_referencing_fk: str, columns: List[str]
     ) -> Iterable[List[str]]:
-        from graphlib import TopologicalSorter
+        try:
+            from graphlib import TopologicalSorter
+
+            def sorter(graph):
+                return tuple(TopologicalSorter(graph).static_order())
+
+        except ImportError:
+            from toposort import toposort_flatten
+
+            sorter = toposort_flatten
 
         fk_index = columns.index(self_referencing_fk)
 
@@ -128,5 +137,5 @@ class DneDatabaseWriter:
         for line in lines:
             topological_graph.setdefault(line[0], set()).add(line[fk_index])
 
-        sorted_map = tuple(TopologicalSorter(topological_graph).static_order())
+        sorted_map = sorter(topological_graph)
         return sorted(lines, key=lambda line: sorted_map.index(line[0]))
