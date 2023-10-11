@@ -190,7 +190,7 @@ def test_dbwriter_clean_tables_correctly(
 
 def test_dbwriter_calls_populate_unified_table(mocker, connection_url):
     populate_unified_table = mocker.patch(
-         "edne_correios_loader.dbwriter.populate_unified_table"
+        "edne_correios_loader.dbwriter.populate_unified_table"
     )
 
     with DneDatabaseWriter(connection_url) as db_writer:
