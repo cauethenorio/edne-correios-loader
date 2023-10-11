@@ -33,4 +33,5 @@ jobs:
         hatch run lint:all
     - name: Test with pytest
       run: |
-        hatch run test
+        # run the tests using current python version
+        hatch run +py=${{ matrix.python-version }} all:test
