@@ -6,21 +6,20 @@ from edne_correios_loader import DneLoader
 from edne_correios_loader.loader import TableFilesReader
 from edne_correios_loader.table_set import TableSetEnum
 
-
 db_url = sentinel.database_url
 dne_source = sentinel.dne_source
 
 
 @pytest.fixture
 def dne_resolver(mocker):
-    mock = mocker.patch( "edne_correios_loader.loader.DneLoader.DneResolver")
+    mock = mocker.patch("edne_correios_loader.loader.DneLoader.DneResolver")
     mock.return_value.__enter__.return_value = mock.return_value
     return mock
 
 
 @pytest.fixture
 def db_writer(mocker):
-    mock = mocker.patch( "edne_correios_loader.loader.DneLoader.DneDatabaseWriter")
+    mock = mocker.patch("edne_correios_loader.loader.DneLoader.DneDatabaseWriter")
     mock.return_value.__enter__.return_value = mock.return_value
     return mock
 
@@ -34,9 +33,9 @@ def db_writer(mocker):
     ],
 )
 def test_loader_create_populate_and_drop_correct_tables(
-    table_set, dne_resolver, db_writer, mocker
+    table_set, dne_resolver, db_writer, mocker  # noqa: ARG001
 ):
-    table_files_reader = mocker.patch( "edne_correios_loader.loader.TableFilesReader")
+    table_files_reader = mocker.patch("edne_correios_loader.loader.TableFilesReader")
     loader = DneLoader(db_url, dne_source=dne_source)
     loader.load(table_set=table_set)
 

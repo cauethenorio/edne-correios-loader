@@ -118,34 +118,30 @@ class DneResolver:
                     # start the resolver again with the extracted ZIP file as source
                     return self.resolve_dne_source(extracted_zip)
 
-                else:
-                    # the ZIP file isn't a ZIP file containing other ZIP files,
-                    # so let's check if it's a DNE Basico ZIP file
+                # the ZIP file isn't a ZIP file containing other ZIP files,
+                # so let's check if it's a DNE Basico ZIP file
 
-                    valid_dne_files = [
-                        f
-                        for f in archive.namelist()
-                        if filename_is_a_dne_basico_file(f)
-                    ]
+                valid_dne_files = [
+                    f for f in archive.namelist() if filename_is_a_dne_basico_file(f)
+                ]
 
-                    if valid_dne_files:
-                        temp_dir = tempfile.mkdtemp()
-                        self.temp_artifacts.append(temp_dir)
+                if valid_dne_files:
+                    temp_dir = tempfile.mkdtemp()
+                    self.temp_artifacts.append(temp_dir)
 
-                        logger.debug(
-                            "Source is a DNE Basico ZIP file, extracting %s "
-                            "files to %s",
-                            len(valid_dne_files),
-                            temp_dir,
-                        )
+                    logger.debug(
+                        "Source is a DNE Basico ZIP file, extracting %s " "files to %s",
+                        len(valid_dne_files),
+                        temp_dir,
+                    )
 
-                        for file in valid_dne_files:
-                            archive.extract(file, temp_dir)
+                    for file in valid_dne_files:
+                        archive.extract(file, temp_dir)
 
-                        return temp_dir
-                    else:
-                        msg = "ZIP file does not contain DNE Basico files"
-                        raise DneResolverError(msg)
+                    return temp_dir
+
+                msg = "ZIP file does not contain DNE Basico files"
+                raise DneResolverError(msg)
 
         except zipfile.BadZipFile as e:
             msg = f"Source is not a valid ZIP file: {dne_source}"

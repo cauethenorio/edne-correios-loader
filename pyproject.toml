@@ -110,11 +110,11 @@
         ]
 
 [tool.black]
-    target-version = ["py39"]
+    target-version = ["py38"]
     line-length = 88
 
 [tool.ruff]
-    target-version = "py39"
+    target-version = "py38"
     line-length = 88
     src = ["src", "tests"]
     select = [
@@ -186,8 +186,17 @@
         ban-relative-imports = "all"
 
     [tool.ruff.per-file-ignores]
-        # Tests can use magic values, assertions, and relative imports
-        "tests/**/*" = ["PLR2004", "S101", "TID252"]
+        # Tests can use
+        "tests/**/*" = [
+            # magic values
+            "PLR2004",
+            # assertions
+            "S101",
+            # relative imports
+            "TID252",
+            # Ambiguous variable name
+            "E741"
+        ]
 
 [tool.coverage.run]
     source_pkgs = ["edne_correios_loader", "tests"]

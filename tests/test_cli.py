@@ -17,12 +17,12 @@ from .shared import create_inner_dne_zip_file
 
 @pytest.fixture
 def mocked_dne_loader(mocker):
-    return mocker.patch( "edne_correios_loader.cli.DneLoaderWithProgress")
+    return mocker.patch("edne_correios_loader.cli.DneLoaderWithProgress")
 
 
 @pytest.fixture
 def mocked_cep_querier(mocker):
-    return mocker.patch( "edne_correios_loader.cli.CepQuerier")
+    return mocker.patch("edne_correios_loader.cli.CepQuerier")
 
 
 @pytest.fixture
