@@ -1,7 +1,8 @@
 # e-DNE Correios Loader
 
 [![PyPI - Version](https://img.shields.io/pypi/v/edne-correios-loader.svg)](https://pypi.org/project/edne-correios-loader)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/edne-correios-loader.svg)](https://pypi.org/project/edne-correios-loader)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/edne-correios-loader.svg)](https://pypi.org/project/edne-correios-loader
+[![codecov](https://codecov.io/gh/cauethenorio/edne-correios-loader/graph/badge.svg?token=HP9C86U1LX)](https://codecov.io/gh/cauethenorio/edne-correios-loader)
 
 CLI to load e-DNE Basico files from Correios (Brazilian postal service) into a database
 (PostgreSQL, MySQL, SQLite, and others) and create a single table for querying postal codes (CEPs).
