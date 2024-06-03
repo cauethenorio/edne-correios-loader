@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from testcontainers.mysql import MySqlContainer
 from testcontainers.postgres import PostgresContainer
 
+
 from .dne_data import (
     create_sorted_rows,
     generate_bairro,
@@ -63,7 +64,7 @@ def mysql_connection_url():
     ):
         yield external_connection_url
     else:
-        with MySqlContainer("mysql:8.1") as mysql:
+        with MySqlContainer("mysql:8.4") as mysql:
             yield mysql.get_connection_url()
 
 
@@ -79,7 +80,7 @@ def connection_url(
 ):
     if request.param == "postgres":
         connection_url = postgres_connection_url
-    if request.param == "mysql":
+    elif request.param == "mysql":
         connection_url = mysql_connection_url
     else:
         connection_url = f"sqlite:///{sqlite_temp_db_path}/dne-test.db"

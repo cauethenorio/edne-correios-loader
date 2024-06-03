@@ -1,9 +1,9 @@
-version: '3.3'
-
 name: 'dne-correios-loader-tests'
 
 services:
   postgres:
+    env_file:
+      - .env
     environment:
       - POSTGRES_USER
       - POSTGRES_DB
@@ -14,11 +14,13 @@ services:
       - "${POSTGRES_PORT}:5432"
 
   mysql:
-    image: mysql:8.1
+    image: mysql:8.4
+    env_file:
+      - .env
     environment:
       - MYSQL_USER
       - MYSQL_DATABASE
       - MYSQL_PASSWORD
-      - MYSQL_ROOT_PASSWORD
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
     ports:
       - "${MYSQL_PORT}:3306"

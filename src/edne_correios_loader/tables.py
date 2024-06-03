@@ -118,7 +118,7 @@ log_localidade = Table(
     ),
     Column(
         "loc_nu_sub",
-        ForeignKey("log_localidade.loc_nu", ondelete="CASCADE"),
+        ForeignKey("log_localidade.loc_nu", ondelete="NO ACTION"),
         index=True,
         comment="Chave da localidade de subordinação",
     ),

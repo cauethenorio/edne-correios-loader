@@ -1,3 +1,6 @@
+### v0.1.3 (2024-06-03)
+    * Fixed incompatibility with MS SQL Server (fixes #3)
+
 ### v0.1.2 (2023-10-11)
     * Added compatibility with python 3.8
 
