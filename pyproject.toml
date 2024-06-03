@@ -91,11 +91,11 @@
     ]
     [tool.hatch.envs.lint.scripts]
         style = [
-            "ruff {args:.}",
-            "black --check --diff {args:.}",
+            "ruff check {args:.}",
+            "ruff format --diff {args:.}",
         ]
         fmt = [
-            "black {args:.}",
+            "ruff format {args:.}",
             "ruff --fix {args:.}",
             "style",
         ]
@@ -111,75 +111,76 @@
     target-version = "py38"
     line-length = 88
     src = ["src", "tests"]
-    select = [
-        "A",
-        "ARG",
-        "B",
-        "B9",
-        "C",
-        "C4",
-        "DTZ",
-        "E", # pycodestyle errors (https://docs.astral.sh/ruff/rules/#error-e)
-        "EM",
-        "F", # pyflakes (https://docs.astral.sh/ruff/rules/#pyflakes-f)
-        "FBT",
-        "G",
-        "I", # isort (https://docs.astral.sh/ruff/rules/#isort-i)
-        "ICN",
-        "ISC",
-        "N", # pep8-naming (https://docs.astral.sh/ruff/rules/#pep8-naming-n)
-        "PIE",
-        "PLC",
-        "PLE",
-        "PLR",
-        "PLW",
-        "PTH",
-        "Q",
-        "RET",
-        "RUF",
-        "S", # flake8-bandit (https://docs.astral.sh/ruff/rules/#flake8-bandit-s)
-        "SIM",
-        "T",
-        "T10",
-        "T20",
-        "TID",
-        "TRY",
-        "UP", # pyupgrade (https://docs.astral.sh/ruff/rules/#pyupgrade-up)
-        "W", # pycodestyle warnings (https://docs.astral.sh/ruff/rules/#warning-w)
-        "YTT" # flake8-2020 (https://docs.astral.sh/ruff/rules/#flake8-2020-ytt)
-    ]
-    ignore = [
-        # Allow non-abstract empty methods in abstract base classes
-        "B027",
-        # Allow multi-line imports
-        "E401",
-        # Allow boolean positional values in function calls, like `dict.get(... True)`
-        "FBT003",
-        # Ignore checks for possible passwords
-        "S105", "S106", "S107",
-        # Allow nested context manager as they are easier to read
-        "SIM117",
-        # Ignore complexity
-        "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
-        # Allow relative imports
-        "TID252",
-    ]
-    unfixable = [
-        # Don't touch unused imports
-        "F401",
-        # Don't touch unused variables
-        "F841",
-        # Don't touch unused function arguments
-        "ARG001"
-    ]
 
-    [tool.ruff.isort]
+    [tool.ruff.lint]
+        select = [
+            "A",
+            "ARG",
+            "B",
+            "B9",
+            "C",
+            "C4",
+            "DTZ",
+            "E", # pycodestyle errors (https://docs.astral.sh/ruff/rules/#error-e)
+            "EM",
+            "F", # pyflakes (https://docs.astral.sh/ruff/rules/#pyflakes-f)
+            "FBT",
+            "G",
+            "I", # isort (https://docs.astral.sh/ruff/rules/#isort-i)
+            "ICN",
+            "N", # pep8-naming (https://docs.astral.sh/ruff/rules/#pep8-naming-n)
+            "PIE",
+            "PLC",
+            "PLE",
+            "PLR",
+            "PLW",
+            "PTH",
+            "Q",
+            "RET",
+            "RUF",
+            "S", # flake8-bandit (https://docs.astral.sh/ruff/rules/#flake8-bandit-s)
+            "SIM",
+            "T",
+            "T10",
+            "T20",
+            "TID",
+            "TRY",
+            "UP", # pyupgrade (https://docs.astral.sh/ruff/rules/#pyupgrade-up)
+            "W", # pycodestyle warnings (https://docs.astral.sh/ruff/rules/#warning-w)
+            "YTT" # flake8-2020 (https://docs.astral.sh/ruff/rules/#flake8-2020-ytt)
+        ]
+        ignore = [
+            # Allow non-abstract empty methods in abstract base classes
+            "B027",
+            # Allow multi-line imports
+            "E401",
+            # Allow boolean positional values in function calls, like `dict.get(... True)`
+            "FBT003",
+            # Ignore checks for possible passwords
+            "S105", "S106", "S107",
+            # Allow nested context manager as they are easier to read
+            "SIM117",
+            # Ignore complexity
+            "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+            # Allow relative imports
+            "TID252",
+        ]
+        unfixable = [
+            # Don't touch unused imports
+            "F401",
+            # Don't touch unused variables
+            "F841",
+            # Don't touch unused function arguments
+            "ARG001"
+        ]
+
+    [tool.ruff.lint.isort]
         known-first-party = ["edne_correios_loader"]
 
-    [tool.ruff.flake8-tidy-imports]
+    [tool.ruff.lint.flake8-tidy-imports]
         ban-relative-imports = "all"
 
-    [tool.ruff.per-file-ignores]
+    [tool.ruff.lint.per-file-ignores]
         # Tests can use
         "tests/**/*" = [
             # magic values

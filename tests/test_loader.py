@@ -33,7 +33,10 @@ def db_writer(mocker):
     ],
 )
 def test_loader_create_populate_and_drop_correct_tables(
-    table_set, dne_resolver, db_writer, mocker  # noqa: ARG001
+    table_set,
+    dne_resolver,  # noqa: ARG001
+    db_writer,
+    mocker,
 ):
     table_files_reader = mocker.patch("edne_correios_loader.loader.TableFilesReader")
     loader = DneLoader(db_url, dne_source=dne_source)

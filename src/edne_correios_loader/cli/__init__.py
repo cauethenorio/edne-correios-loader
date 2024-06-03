@@ -47,8 +47,7 @@ class DneLoaderWithProgress(DneLoader):
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(version=__version__, prog_name="DNE Correios Loader")
-def edne_correios_loader():
-    ...  # pragma: no cover
+def edne_correios_loader(): ...  # pragma: no cover
 
 
 @edne_correios_loader.command()

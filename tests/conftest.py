@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 from testcontainers.mysql import MySqlContainer
 from testcontainers.postgres import PostgresContainer
 
-
 from .dne_data import (
     create_sorted_rows,
     generate_bairro,
