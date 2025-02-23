@@ -1,3 +1,7 @@
+### v0.2.0 (2025-02-23)
+    * Added compatibility with python 3.13
+    * Updated db writer to skip CEPs without municipality IBGE code when populating cep_unificado
+
 ### v0.1.3 (2024-06-03)
     * Fixed incompatibility with MS SQL Server (fixes #3)
     * Replaced Black with Ruff for code formatting
