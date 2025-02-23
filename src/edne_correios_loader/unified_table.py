@@ -85,7 +85,9 @@ def select_localidades_ceps() -> "sa.Select":
         )
         .select_from(log_localidade)
         .where(
-            log_localidade.c.cep.isnot(None) & log_localidade.c.loc_nu_sub.is_(None),
+            log_localidade.c.cep.isnot(None)
+            & log_localidade.c.loc_nu_sub.is_(None)
+            & log_localidade.c.mun_nu.isnot(None),
         )
     )
 
@@ -107,7 +109,9 @@ def select_localidades_subordinadas_ceps() -> "sa.Select":
             onclause=log_localidade.c.loc_nu_sub == localidade_subordinada.c.loc_nu,
         )
         .where(
-            log_localidade.c.cep.isnot(None) & log_localidade.c.loc_nu_sub.isnot(None),
+            log_localidade.c.cep.isnot(None)
+            & log_localidade.c.loc_nu_sub.isnot(None)
+            & localidade_subordinada.c.mun_nu.isnot(None),
         )
     )
 
@@ -193,6 +197,12 @@ def select_unidades_operacionais_ceps() -> "sa.Select":
         .outerjoin(
             localidade_subordinada,
             onclause=log_localidade.c.loc_nu_sub == localidade_subordinada.c.loc_nu,
+        )
+        .where(
+            sa.func.coalesce(
+                localidade_subordinada.c.mun_nu,
+                log_localidade.c.mun_nu,
+            ).isnot(None)
         )
     )
 

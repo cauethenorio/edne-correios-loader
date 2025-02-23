@@ -48,7 +48,39 @@ def test_populate_unified_table_populates_correctly(connection_url):
         "mun_nu": 445566,
     }
 
-    localidades = [localidade_sp, localidade_distrito_sp, localidade_ba]
+    # a municipality with a CEP and without mun_nu
+    localidade_sem_cod_ibge = {
+        "loc_nu": 126,
+        "ufe_sg": "MT",
+        "loc_no": "Boa Esperança do None",
+        "cep": "11111113",
+        "loc_in_sit": SituacaoLocalidadeEnum.NAO_CODIFICADA,
+        "loc_in_tipo_loc": TipoLocalidadeEnum.MUNICIPIO,
+        "loc_nu_sub": None,
+        "loc_no_abrev": "B. E. do None",
+        "mun_nu": None,
+    }
+
+    # subordinated district within a municipality with no mun_nu
+    localidade_distrito_sem_cod_ibge = {
+        "loc_nu": 127,
+        "ufe_sg": "MT",
+        "loc_no": "Distrito de Boa Esperança do None",
+        "cep": "11111114",
+        "loc_in_sit": SituacaoLocalidadeEnum.NAO_CODIFICADA,
+        "loc_in_tipo_loc": TipoLocalidadeEnum.DISTRITO,
+        "loc_nu_sub": localidade_sem_cod_ibge["loc_nu"],
+        "loc_no_abrev": "D. de B. E. do None",
+        "mun_nu": None,
+    }
+
+    localidades = [
+        localidade_sp,
+        localidade_distrito_sp,
+        localidade_ba,
+        localidade_sem_cod_ibge,
+        localidade_distrito_sem_cod_ibge,
+    ]
 
     bairro_sp = {
         "bai_nu": 221,
@@ -177,7 +209,21 @@ def test_populate_unified_table_populates_correctly(connection_url):
         "uop_no_abrev": "CDD S.",
     }
 
-    unidades_operacionais = [uop_sp, uop_ba]
+    # unidade operacional in a municipality with no mun_nu
+    uop_sem_cod_ibge = {
+        "uop_nu": 663,
+        "ufe_sg": localidade_sem_cod_ibge["ufe_sg"],
+        "loc_nu": localidade_sem_cod_ibge["loc_nu"],
+        "bai_nu": bairro_ba["bai_nu"],
+        "log_nu": logradouro_ba["log_nu"],
+        "uop_no": "AC Boa Esperança do None",
+        "uop_endereco": "Rua Esperança, 78",
+        "cep": "66666663",
+        "uop_in_cp": "S",
+        "uop_no_abrev": "AC B. E. do None",
+    }
+
+    unidades_operacionais = [uop_sp, uop_ba, uop_sem_cod_ibge]
 
     with sa.create_engine(connection_url).connect() as connection:
         metadata.create_all(connection)
