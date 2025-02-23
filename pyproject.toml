@@ -191,7 +191,10 @@
             # relative imports
             "TID252",
             # Ambiguous variable name
-            "E741"
+            "E741",
+            # opening files without using a context manager
+            "SIM115",
+
         ]
 
 [tool.coverage.run]
