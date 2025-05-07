@@ -5,7 +5,7 @@ from edne_correios_loader.tables import (
     TipoLocalidadeEnum,
     metadata,
 )
-from edne_correios_loader.unified_table import populate_unified_table
+from edne_correios_loader.unified_table import populate_unified_table, select_logradouros_ceps
 
 
 def test_populate_unified_table_populates_correctly(connection_url):
@@ -363,3 +363,105 @@ def test_populate_unified_table_populates_correctly(connection_url):
                 "nome": uop_ba["uop_no"],
             },
         ]
+
+def test_logradouros_with_null_municipio_cod_ibge_excluded(connection_url):
+    """Test that logradouros with null municipality codes are excluded from the results."""
+    # Municipality with null mun_nu (IBGE code)
+    localidade_null_ibge = {
+        "loc_nu": 901,
+        "ufe_sg": "MG",
+        "loc_no": "Cidade Sem Código IBGE",
+        "cep": None,
+        "loc_in_sit": SituacaoLocalidadeEnum.CODIFICADA,
+        "loc_in_tipo_loc": TipoLocalidadeEnum.MUNICIPIO,
+        "loc_nu_sub": None,
+        "loc_no_abrev": "C. S. C. IBGE",
+        "mun_nu": None,  # Null municipality code
+    }
+
+    # Normal municipality with mun_nu
+    localidade_with_ibge = {
+        "loc_nu": 902,
+        "ufe_sg": "MG",
+        "loc_no": "Cidade Com Código IBGE",
+        "cep": None,
+        "loc_in_sit": SituacaoLocalidadeEnum.CODIFICADA,
+        "loc_in_tipo_loc": TipoLocalidadeEnum.MUNICIPIO,
+        "loc_nu_sub": None,
+        "loc_no_abrev": "C. C. C. IBGE",
+        "mun_nu": 999999,  # Valid municipality code
+    }
+
+    bairro_null_ibge = {
+        "bai_nu": 801,
+        "ufe_sg": localidade_null_ibge["ufe_sg"],
+        "loc_nu": localidade_null_ibge["loc_nu"],
+        "bai_no": "Bairro da Cidade Sem Código IBGE",
+        "bai_no_abrev": "B. C. S. C. IBGE",
+    }
+
+    bairro_with_ibge = {
+        "bai_nu": 802,
+        "ufe_sg": localidade_with_ibge["ufe_sg"],
+        "loc_nu": localidade_with_ibge["loc_nu"],
+        "bai_no": "Bairro da Cidade Com Código IBGE",
+        "bai_no_abrev": "B. C. C. C. IBGE",
+    }
+
+    # Logradouro associated with municipality that has null mun_nu
+    logradouro_null_ibge = {
+        "log_nu": 701,
+        "ufe_sg": localidade_null_ibge["ufe_sg"],
+        "loc_nu": localidade_null_ibge["loc_nu"],
+        "bai_nu_ini": bairro_null_ibge["bai_nu"],
+        "log_no": "Rua da Cidade Sem Código IBGE",
+        "log_complemento": None,
+        "cep": "77777701",
+        "tlo_tx": "Rua",
+        "log_sta_tlo": "S",
+        "log_no_abrev": None,
+    }
+
+    # Logradouro associated with municipality that has valid mun_nu
+    logradouro_with_ibge = {
+        "log_nu": 702,
+        "ufe_sg": localidade_with_ibge["ufe_sg"],
+        "loc_nu": localidade_with_ibge["loc_nu"],
+        "bai_nu_ini": bairro_with_ibge["bai_nu"],
+        "log_no": "Rua da Cidade Com Código IBGE",
+        "log_complemento": None,
+        "cep": "77777702",
+        "tlo_tx": "Rua",
+        "log_sta_tlo": "S",
+        "log_no_abrev": None,
+    }
+
+    with sa.create_engine(connection_url).connect() as connection:
+        metadata.create_all(connection)
+
+        # Insert test data
+        connection.execute(metadata.tables["log_localidade"].insert(), [localidade_null_ibge, localidade_with_ibge])
+        connection.execute(metadata.tables["log_bairro"].insert(), [bairro_null_ibge, bairro_with_ibge])
+        connection.execute(metadata.tables["log_logradouro"].insert(), [logradouro_null_ibge, logradouro_with_ibge])
+
+        # Execute the function that should filter out records with null mun_nu
+        results = connection.execute(select_logradouros_ceps()).fetchall()
+        
+        # Verify that only the logradouro with valid municipality code is included
+        ceps = [row.cep for row in results]
+        assert logradouro_null_ibge["cep"] not in ceps, "Logradouro with null municipio_cod_ibge should be excluded"
+        assert logradouro_with_ibge["cep"] in ceps, "Logradouro with valid municipio_cod_ibge should be included"
+
+        # Verify that the full table population also works
+        # Clear the unified table first
+        connection.execute(metadata.tables["cep_unificado"].delete())
+        
+        # Populate the unified table
+        populate_unified_table(connection)
+        
+        # Check that only the logradouro with valid municipality code is in the unified table
+        unified_results = connection.execute(metadata.tables["cep_unificado"].select()).fetchall()
+        unified_ceps = [row.cep for row in unified_results]
+        
+        assert logradouro_null_ibge["cep"] not in unified_ceps, "Logradouro with null municipio_cod_ibge should not be in unified table"
+        assert logradouro_with_ibge["cep"] in unified_ceps, "Logradouro with valid municipio_cod_ibge should be in unified table"

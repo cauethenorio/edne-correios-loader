@@ -72,7 +72,7 @@ def select_logradouros_ceps() -> "sa.Select":
         log_logradouro.join(log_localidade).join(
             log_bairro, onclause=log_logradouro.c.bai_nu_ini == log_bairro.c.bai_nu
         )
-    )
+    ).where(log_localidade.c.mun_nu.isnot(None))
 
 
 def select_localidades_ceps() -> "sa.Select":
