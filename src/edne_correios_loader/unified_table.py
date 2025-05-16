@@ -55,24 +55,28 @@ def cep_unificado_insert_in_batches(
 
 
 def select_logradouros_ceps() -> "sa.Select":
-    return sa.select(
-        log_logradouro.c.cep.label("cep"),
-        sa.case(
-            (
-                log_logradouro.c.log_sta_tlo == "S",
-                log_logradouro.c.tlo_tx + " " + log_logradouro.c.log_no,
-            ),
-            else_=log_logradouro.c.log_no,
-        ).label("logradouro"),
-        log_bairro.c.bai_no.label("bairro"),
-        log_localidade.c.loc_no.label("municipio"),
-        log_localidade.c.mun_nu.label("municipio_cod_ibge"),
-        log_logradouro.c.ufe_sg.label("uf"),
-    ).select_from(
-        log_logradouro.join(log_localidade).join(
-            log_bairro, onclause=log_logradouro.c.bai_nu_ini == log_bairro.c.bai_nu
+    return (
+        sa.select(
+            log_logradouro.c.cep.label("cep"),
+            sa.case(
+                (
+                    log_logradouro.c.log_sta_tlo == "S",
+                    log_logradouro.c.tlo_tx + " " + log_logradouro.c.log_no,
+                ),
+                else_=log_logradouro.c.log_no,
+            ).label("logradouro"),
+            log_bairro.c.bai_no.label("bairro"),
+            log_localidade.c.loc_no.label("municipio"),
+            log_localidade.c.mun_nu.label("municipio_cod_ibge"),
+            log_logradouro.c.ufe_sg.label("uf"),
         )
-    ).where(log_localidade.c.mun_nu.isnot(None))
+        .select_from(
+            log_logradouro.join(log_localidade).join(
+                log_bairro, onclause=log_logradouro.c.bai_nu_ini == log_bairro.c.bai_nu
+            )
+        )
+        .where(log_localidade.c.mun_nu.isnot(None))
+    )
 
 
 def select_localidades_ceps() -> "sa.Select":

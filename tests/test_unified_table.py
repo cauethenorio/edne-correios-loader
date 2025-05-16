@@ -5,7 +5,10 @@ from edne_correios_loader.tables import (
     TipoLocalidadeEnum,
     metadata,
 )
-from edne_correios_loader.unified_table import populate_unified_table, select_logradouros_ceps
+from edne_correios_loader.unified_table import (
+    populate_unified_table,
+    select_logradouros_ceps,
+)
 
 
 def test_populate_unified_table_populates_correctly(connection_url):
@@ -364,8 +367,9 @@ def test_populate_unified_table_populates_correctly(connection_url):
             },
         ]
 
+
 def test_logradouros_with_null_municipio_cod_ibge_excluded(connection_url):
-    """Test that logradouros with null municipality codes are excluded from the results."""
+    """Test that logradouros with null municipality codes are excluded."""
     # Municipality with null mun_nu (IBGE code)
     localidade_null_ibge = {
         "loc_nu": 901,
@@ -440,28 +444,48 @@ def test_logradouros_with_null_municipio_cod_ibge_excluded(connection_url):
         metadata.create_all(connection)
 
         # Insert test data
-        connection.execute(metadata.tables["log_localidade"].insert(), [localidade_null_ibge, localidade_with_ibge])
-        connection.execute(metadata.tables["log_bairro"].insert(), [bairro_null_ibge, bairro_with_ibge])
-        connection.execute(metadata.tables["log_logradouro"].insert(), [logradouro_null_ibge, logradouro_with_ibge])
+        connection.execute(
+            metadata.tables["log_localidade"].insert(),
+            [localidade_null_ibge, localidade_with_ibge],
+        )
+        connection.execute(
+            metadata.tables["log_bairro"].insert(),
+            [bairro_null_ibge, bairro_with_ibge],
+        )
+        connection.execute(
+            metadata.tables["log_logradouro"].insert(),
+            [logradouro_null_ibge, logradouro_with_ibge],
+        )
 
         # Execute the function that should filter out records with null mun_nu
         results = connection.execute(select_logradouros_ceps()).fetchall()
-        
+
         # Verify that only the logradouro with valid municipality code is included
         ceps = [row.cep for row in results]
-        assert logradouro_null_ibge["cep"] not in ceps, "Logradouro with null municipio_cod_ibge should be excluded"
-        assert logradouro_with_ibge["cep"] in ceps, "Logradouro with valid municipio_cod_ibge should be included"
+        assert logradouro_null_ibge["cep"] not in ceps, (
+            "Logradouro with null municipio_cod_ibge should be excluded"
+        )
+        assert logradouro_with_ibge["cep"] in ceps, (
+            "Logradouro with valid municipio_cod_ibge should be included"
+        )
 
         # Verify that the full table population also works
         # Clear the unified table first
         connection.execute(metadata.tables["cep_unificado"].delete())
-        
+
         # Populate the unified table
         populate_unified_table(connection)
-        
-        # Check that only the logradouro with valid municipality code is in the unified table
-        unified_results = connection.execute(metadata.tables["cep_unificado"].select()).fetchall()
+
+        # Check that only the logradouro with valid municipality code
+        # is in the unified table
+        unified_results = connection.execute(
+            metadata.tables["cep_unificado"].select()
+        ).fetchall()
         unified_ceps = [row.cep for row in unified_results]
-        
-        assert logradouro_null_ibge["cep"] not in unified_ceps, "Logradouro with null municipio_cod_ibge should not be in unified table"
-        assert logradouro_with_ibge["cep"] in unified_ceps, "Logradouro with valid municipio_cod_ibge should be in unified table"
+
+        assert logradouro_null_ibge["cep"] not in unified_ceps, (
+            "Logradouro with null municipio_cod_ibge should not be in unified table"
+        )
+        assert logradouro_with_ibge["cep"] in unified_ceps, (
+            "Logradouro with valid municipio_cod_ibge should be in unified table"
+        )
