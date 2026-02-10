@@ -4,7 +4,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/edne-correios-loader.svg)](https://pypi.org/project/edne-correios-loader)
 [![codecov](https://codecov.io/gh/cauethenorio/edne-correios-loader/graph/badge.svg?token=HP9C86U1LX)](https://codecov.io/gh/cauethenorio/edne-correios-loader)
 
-Programa de linha de comando para carregar arquivos do e-DNE Basico dos Correios para um banco de
+Programa de linha de comando para baixar e carregar o e-DNE Básico dos Correios para um banco de
 dados (PostgreSQL, MySQL, SQLite e outros) e criar uma tabela única para consulta de CEPs.
 
 ---
@@ -13,7 +13,8 @@ dados (PostgreSQL, MySQL, SQLite e outros) e criar uma tabela única para consul
 
 ## Funcionalidades
 
-- Carrega arquivos do DNE Básico dos Correios para um banco de dados
+- Baixa automaticamente o e-DNE Básico do site dos Correios
+- Carrega os dados do e-DNE para um banco de dados
 - Cria uma tabela unificada para consulta de CEPs
 - Suporta os bancos de dados PostgreSQL, MySQL, SQLite entre outros
 - Permite atualização dos dados sem interrupção do serviço
@@ -22,7 +23,7 @@ dados (PostgreSQL, MySQL, SQLite e outros) e criar uma tabela única para consul
 ## Propósito
 
 O DNE (Diretório Nacional de Endereços) é um banco de dados oficial e exclusivo dos Correios,
-que contém mais de 900 mil CEP de todo o Brasil, constituído de elementos de endereçamento
+que contém mais de 900 mil CEPs de todo o Brasil, constituído de elementos de endereçamento
 (descrição de logradouros, bairros, municípios, vilas, povoados) e Códigos de Endereçamento
 Postal - CEP.
 
@@ -32,17 +33,11 @@ de logradouro, porém diferem no formato. O e-DNE Básico é composto por vário
 (`.txt`) que precisam ser processados e transferidos para um banco de dados para poderem ser
 consultados. Já o e-DNE Máster é um banco de dados no formato MS-Access (`.mdb`) pronto para uso.
 
-O DNE é de propriedade dos Correios e pode ser adquirido através de seu e-commerce. Atualmente
-(Outubro de 2023) a versão Máster custa R$ 3.187,65 e a versão Básica custa R$ 1.402,5.
-Ambas as versões garantem um ano de atualizações após a data da compra.
-
-[__Para clientes com contrato com os Correios, o e-DNE Básico pode ser adquirido gratuitamente.__](https://www.correios.com.br/enviar/marketing-direto/saiba-mais-nacional)
-
-Esse projeto facilita o uso do e-DNE Básico, que é mais barato e mais fácil de ser adquirido,
-processando os arquivos de texto e transferindo-os para um banco de dados, ele também cria uma
-tabela única para consulta de CEPs (não inclusa no DNE, onde CEPs de diferentes tipos ficam em
-tabelas diferentes) e permite que sua base seja atualizada com novas versões do e-DNE, lançadas
-quinzenalmente pelos Correios.
+Esse projeto baixa automaticamente o e-DNE Básico do site dos Correios, processa os arquivos
+de texto e os transfere para um banco de dados. Ele também cria uma tabela unificada para
+consulta de CEPs (não inclusa no DNE original, onde CEPs de diferentes tipos ficam em tabelas
+separadas) e permite atualizar sua base com novas versões do e-DNE, lançadas quinzenalmente
+pelos Correios.
 
 
 ## Instalação
@@ -126,9 +121,8 @@ As seguintes opções estão disponíveis:
     - O caminho local para um arquivo ZIP com o e-DNE
     - O caminho local para um diretório contendo os arquivos do e-DNE
     
-  Se essa opcão não for informada, o último e-DNE Básico disponível no site dos
-  Correios será baixado e usado como fonte. **Utilize essa opção apenas se você
-  tiver um contrato com os Correios**.
+  Se essa opção não for informada, o último e-DNE Básico disponível no site dos
+  Correios será baixado automaticamente e utilizado como fonte.
  
 
 - __`--database-url`__ **(obrigatório)**
@@ -190,8 +184,8 @@ edne-correios-loader load \
   --tables all
 ```
 
-O output do comando deve variar conforme as opções utilizadas, mas deve ser
-parecido com o seguinte:
+A saída do comando varia conforme as opções utilizadas, mas deve ser
+parecida com o seguinte:
 ```
 Starting DNE Correios Loader v0.1.1
 
@@ -328,7 +322,8 @@ from edne_correios_loader import DneLoader, TableSetEnum
 DneLoader(
   # URL de conexão com o banco de dados (obrigatório)
   'postgresql://user:pass@localhost:5432/mydb',
-  # Caminho ou URL para o arquivo ZIP ou diretório com os arquivos do e-DNE (opcional) 
+  # Caminho ou URL para o arquivo ZIP ou diretório com os arquivos do e-DNE (opcional)
+  # Quando omitido, o e-DNE será baixado automaticamente do site dos Correios
   dne_source="/path/to/dne.zip",
 ).load(
   # Quais tabelas manter no banco de dados após a importação (opcional)
@@ -360,10 +355,11 @@ assert cep == {
 ## Atualização dos CEPs
 
 Quinzenalmente os Correios atualizam o e-DNE com novos CEPs. Para atualizar sua base de dados,
-execute o comando `loader` utilizando o e-DNE atualizado como fonte.
+basta executar novamente o comando `load`. O e-DNE mais recente será baixado
+automaticamente do site dos Correios.
 
 O comando irá apagar os dados de todas as tabelas do e-DNE e importar os dados do novo e-DNE.
-Após a importação a tabela unificada é re-populada com os novos dados.
+Após a importação, a tabela unificada é repopulada com os novos dados.
 
 Todo o processo é executado em uma transação, portanto, outros clientes conectados no banco
 continuarão tendo acesso aos dados antigos enquanto a atualização é executada.
@@ -378,7 +374,7 @@ Para executar os testes, é necessário a instalação do [Docker](https://www.d
 1. Clone o projeto:
   ```shell
   git clone https://github.com/cauethenorio/edne-correios-loader
-  ```` 
+  ```
 2. Rode os containers Docker com MySQL e PostgreSQL:
   ```shell
   cd edne-correios-loader/tests

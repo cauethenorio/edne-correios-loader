@@ -1,10 +1,10 @@
 # e-DNE Correios Loader
 
 [![PyPI - Version](https://img.shields.io/pypi/v/edne-correios-loader.svg)](https://pypi.org/project/edne-correios-loader)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/edne-correios-loader.svg)](https://pypi.org/project/edne-correios-loader
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/edne-correios-loader.svg)](https://pypi.org/project/edne-correios-loader)
 [![codecov](https://codecov.io/gh/cauethenorio/edne-correios-loader/graph/badge.svg?token=HP9C86U1LX)](https://codecov.io/gh/cauethenorio/edne-correios-loader)
 
-CLI to load e-DNE Basico files from Correios (Brazilian postal service) into a database
+CLI to download and load the e-DNE Básico from Correios (Brazilian postal service) into a database
 (PostgreSQL, MySQL, SQLite, and others) and create a single table for querying postal codes (CEPs).
 
 ---
@@ -13,7 +13,8 @@ CLI to load e-DNE Basico files from Correios (Brazilian postal service) into a d
 
 ## Features
 
-- Import Correios' e-DNE Basico files into a database
+- Automatically downloads the e-DNE Básico from the Correios website
+- Imports Correios' e-DNE Básico files into a database
 - Creates a unified table for querying postal codes (CEPs)
 - Supports databases like PostgreSQL, MySQL, SQLite, and others
 - Allows for data updates without service interruption
@@ -32,17 +33,11 @@ but they differ in format. The e-DNE Basic is composed of several text files (`.
 to be processed and transferred to a database in order to be queried. On the other hand, the
 e-DNE Master is a database in MS-Access format (`.mdb`) ready for use.
 
-The DNE is owned by Correios and can be purchased through their e-commerce platform. Currently,
-(October 2023), the Master version costs R$ 3,187.65 and the Basic version costs R$ 1,402.5.
-Both versions guarantee one year of updates after the purchase date.
-
-[__For clients with a contract with Correios, the e-DNE Basic can be acquired for free.__](https://www.correios.com.br/enviar/marketing-direto/saiba-mais-nacional)
-
-This project facilitates the use of the e-DNE Basic, which is cheaper and easier to acquire,
-by processing the text files and transferring them to a database. It also creates a
-single table for querying postal codes (not included in the DNE, where different types of
-postal codes are stored in different tables) and allows your database to be updated with
-new versions of the e-DNE, released biweekly by Correios.
+This project automatically downloads the e-DNE Basic from the Correios website, processes the
+text files, and transfers them to a database. It also creates a unified table for querying
+postal codes (not included in the original DNE, where different types of postal codes are stored
+in separate tables) and allows your database to be updated with new versions of the e-DNE,
+released biweekly by Correios.
 
 
 ## Installation
@@ -64,7 +59,7 @@ For PostgreSQL, the `psycopg2-binary` driver can be installed using an
 pip install edne-correios-loader[postgresql]
 ```
 
-If there are no pre-compiled version of `psycopg2` for your operating system and Python version,
+If there is no pre-compiled version of `psycopg2` for your operating system and Python version,
 you may need to install some libraries to be able to compile the driver. Another option is to install the
 `pg8000` driver for PostgreSQL, which is written entirely in Python and does not need to be compiled.
 
@@ -126,9 +121,8 @@ The following options are available:
     - The local path to a ZIP file with the e-DNE
     - The local path to a directory containing the e-DNE files
     
-  If this option is not provided, the latest available e-DNE Basic on the Correios website
-  will be downloaded and used as the source. **Use this option only if you have a contract
-  with Correios**.
+  If this option is not provided, the latest e-DNE Basic will be automatically
+  downloaded from the Correios website and used as the source.
  
 
 - __`--database-url`__ **(required)**
@@ -327,7 +321,8 @@ from edne_correios_loader import DneLoader, TableSetEnum
 DneLoader(
   # Database connection URL (required)
   'postgresql://user:pass@localhost:5432/mydb',
-  # Path or URL to the ZIP file or directory with e-DNE files (optional) 
+  # Path or URL to the ZIP file or directory with e-DNE files (optional)
+  # When omitted, the e-DNE will be automatically downloaded from the Correios website
   dne_source="/path/to/dne.zip",
 ).load(
   # define the tables to keep in the database after the import (optional)
@@ -358,8 +353,9 @@ assert cep == {
 
 ## Updating CEPs data
 
-Bi-weekly, Correios update the e-DNE with new postal codes. To update your database,
-run the `loader` command using the updated e-DNE file as the source.
+Every two weeks, Correios updates the e-DNE with new postal codes. To update your database,
+simply run the `load` command again. The latest e-DNE will be automatically downloaded from
+the Correios website.
 
 The command will delete the data from all e-DNE tables and import the data from the new e-DNE.
 After the import, the unified table is repopulated with the new data.
@@ -377,7 +373,7 @@ To run the tests, you need to have [Docker](https://www.docker.com/) and
 1. Clone the project:
   ```shell
   git clone https://github.com/cauethenorio/edne-correios-loader
-  ```` 
+  ```
 2. Run the Docker containers with MySQL and PostgreSQL:
   ```shell
   cd edne-correios-loader/tests
