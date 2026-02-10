@@ -1,5 +1,3 @@
-from typing import Union
-
 from sqlalchemy import create_engine
 
 from .tables import metadata
@@ -11,7 +9,7 @@ class CepQuerier:
     def __init__(self, database_url: str):
         self.engine = create_engine(database_url, echo=False)
 
-    def query(self, cep: str) -> Union[dict, None]:
+    def query(self, cep: str) -> dict | None:
         cep = cep.replace("-", "").strip()
 
         with self.engine.connect() as conn:

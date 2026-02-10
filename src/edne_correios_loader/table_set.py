@@ -1,5 +1,4 @@
 import enum
-from typing import List, Union
 
 from .tables import metadata
 
@@ -14,14 +13,14 @@ class TableSetEnum(enum.Enum):
     ALL_TABLES = "all"
 
     @property
-    def to_populate(self) -> List[str]:
+    def to_populate(self) -> list[str]:
         if self.value == "all":
             return [t.name for t in metadata.sorted_tables]
 
         return get_cep_tables()
 
     @property
-    def to_drop(self) -> List[str]:
+    def to_drop(self) -> list[str]:
         if self.value == "unified-cep-only":
             return [
                 t.name
@@ -32,7 +31,7 @@ class TableSetEnum(enum.Enum):
         return []
 
 
-def get_cep_tables() -> List[str]:
+def get_cep_tables() -> list[str]:
     """
     Get the list of tables that are required for CEP search.
     """
@@ -49,7 +48,7 @@ def get_cep_tables() -> List[str]:
     return list(reversed(tables))
 
 
-def get_table_files_glob(table_name: str) -> Union[str, None]:
+def get_table_files_glob(table_name: str) -> str | None:
     """
     Get the file globs for each table.
     Calculate from table name when not specified.
