@@ -55,7 +55,7 @@ def test_cli_show_help_message_when_no_subcommand_is_specified():
     runner = CliRunner()
     result = runner.invoke(edne_correios_loader)
 
-    assert result.exit_code == 0
+    assert result.exit_code == 2
     assert "Usage: " in result.output
 
 
@@ -87,7 +87,7 @@ def test_cli_load_command_show_error_stack_when_verbose(mocked_dne_loader):
 
     mocked_dne_loader.return_value.load.side_effect = exc
 
-    runner = CliRunner(mix_stderr=False)
+    runner = CliRunner()
     result = runner.invoke(load, ["-db", db_url, "--verbose"])
 
     assert result.exit_code == 1
@@ -114,7 +114,7 @@ def test_cli_load_command_use_provided_options(mocked_dne_loader):
 
 
 def test_cli_query_cep_command_asks_for_required_arguments():
-    runner = CliRunner(mix_stderr=False)
+    runner = CliRunner()
 
     result = runner.invoke(query_cep)
     assert result.exit_code == 2
@@ -135,7 +135,7 @@ def test_cli_query_cep_uses_args_correctly(mocked_cep_querier):
     address = {"rua": "dos bobos"}
     mocked_cep_querier.return_value.query.return_value = address
 
-    runner = CliRunner(mix_stderr=False)
+    runner = CliRunner()
     result = runner.invoke(query_cep, ["--database-url", db_url, cep])
     assert result.exit_code == 0
     assert json.loads(result.stdout) == address
@@ -154,7 +154,7 @@ def test_cli_query_cep_capture_and_display_errors(mocked_cep_querier):
     cep = "01319-010"
     mocked_cep_querier.return_value.query.side_effect = Exception("some nasty error")
 
-    runner = CliRunner(mix_stderr=False)
+    runner = CliRunner()
     result = runner.invoke(query_cep, ["--database-url", db_url, cep])
 
     assert result.exit_code == 1
