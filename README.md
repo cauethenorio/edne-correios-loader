@@ -202,7 +202,7 @@ edne-correios-loader load \
 A saída do comando varia conforme as opções utilizadas, mas deve ser
 parecida com o seguinte:
 ```
-Starting DNE Correios Loader v0.1.1
+Starting DNE Correios Loader v1.0.0
 
 Connecting to database...
 

@@ -1,3 +1,10 @@
+### v1.0.0 (2026-02-10)
+    * Dropped Python 3.8 and 3.9 support, which reached EOL
+    * Added Python 3.14 support
+    * Migrated tooling from hatch to uv
+    * Fixed compatibility with Click 8.2+
+    * Added instructions on how to use it with uvx
+
 ### v0.2.0 (2025-02-23)
     * Added compatibility with python 3.13
     * Updated db writer to skip CEPs without municipality IBGE code when populating cep_unificado

@@ -8,13 +8,14 @@ jobs:
   report-coverage:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: astral-sh/setup-uv@v4
+    - uses: actions/checkout@v5
+    - uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: true
     - name: Test with Coverage
       run: |
-        uv run --python 3.11 coverage run -m pytest tests
-        uv run --python 3.11 coverage combine
-        uv run --python 3.11 coverage xml
+        make test-cov PY=3.11
+        make cov-xml PY=3.11
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
       env:
