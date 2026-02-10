@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import json
 import logging
 import sys
-from typing import Optional
 
 import click
 
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class DneResolverWithDownloadProgress(DneResolver):
-    progress_bar: Optional[click.progressbar] = None
+    progress_bar: click.progressbar | None = None
 
     def download_report_hook(self, read, total, hook_type):
         if total == -1:

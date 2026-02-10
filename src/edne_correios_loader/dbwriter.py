@@ -1,5 +1,6 @@
 import logging
-from typing import Iterable, List, Union
+from collections.abc import Iterable
+from graphlib import TopologicalSorter
 
 import sqlalchemy as sa
 
@@ -33,14 +34,14 @@ class DneDatabaseWriter:
 
         self.connection.close()
 
-    def create_tables(self, tables: List[str]):
+    def create_tables(self, tables: list[str]):
         metadata_tables = [self.metadata.tables[t] for t in tables]
         tables_names = "\n".join([f"- {t}" for t in tables])
 
         logger.info("Creating tables:\n%s", tables_names, extra={"indentation": 0})
         metadata.create_all(self.engine, tables=metadata_tables)
 
-    def clean_tables(self, tables: List[str]):
+    def clean_tables(self, tables: list[str]):
         logger.info("Cleaning tables", extra={"indentation": 0})
 
         # delete rows in reverse order to avoid foreign key constraint violations
@@ -58,7 +59,7 @@ class DneDatabaseWriter:
                 )
                 self.connection.execute(table.delete())
 
-    def drop_tables(self, tables: List[str]):
+    def drop_tables(self, tables: list[str]):
         if tables:
             logger.info("Dropping tables", extra={"indentation": 0})
 
@@ -66,7 +67,7 @@ class DneDatabaseWriter:
                 logger.info("Dropping table %s", table, extra={"indentation": 1})
                 self.metadata.tables[table].drop(self.connection, checkfirst=True)
 
-    def populate_table(self, table_name: str, lines: Iterable[List[str]]):
+    def populate_table(self, table_name: str, lines: Iterable[list[str]]):
         logger.info("Populating table %s", table_name, extra={"indentation": 0})
         table = self.metadata.tables[table_name]
         columns = [c.name for c in table.columns]
@@ -81,7 +82,7 @@ class DneDatabaseWriter:
         buffer = []
 
         for count, line in enumerate(lines, start=1):  # noqa: B007
-            buffer.append(dict(zip(columns, line)))
+            buffer.append(dict(zip(columns, line, strict=False)))
 
             if len(buffer) >= self.insert_buffer_size:
                 self.connection.execute(table.insert(), buffer)
@@ -102,7 +103,7 @@ class DneDatabaseWriter:
         populate_unified_table(self.connection)
 
     @staticmethod
-    def find_self_referencing_fks(table) -> Union[str, None]:
+    def find_self_referencing_fks(table) -> str | None:
         """
         Find any column that references the same table.
         If there is one, the rows must be topologically sorted before inserting.
@@ -114,19 +115,8 @@ class DneDatabaseWriter:
 
     @staticmethod
     def sort_topologically(
-        lines: Iterable[List[str]], self_referencing_fk: str, columns: List[str]
-    ) -> Iterable[List[str]]:
-        try:
-            from graphlib import TopologicalSorter
-
-            def sorter(graph):
-                return tuple(TopologicalSorter(graph).static_order())
-
-        except ImportError:
-            from toposort import toposort_flatten
-
-            sorter = toposort_flatten
-
+        lines: Iterable[list[str]], self_referencing_fk: str, columns: list[str]
+    ) -> Iterable[list[str]]:
         fk_index = columns.index(self_referencing_fk)
 
         # convert iterable to list as it will be iterated multiple times
@@ -137,5 +127,5 @@ class DneDatabaseWriter:
         for line in lines:
             topological_graph.setdefault(line[0], set()).add(line[fk_index])
 
-        sorted_map = sorter(topological_graph)
+        sorted_map = tuple(TopologicalSorter(topological_graph).static_order())
         return sorted(lines, key=lambda line: sorted_map.index(line[0]))

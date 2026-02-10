@@ -42,7 +42,22 @@ pelos Correios.
 
 ## Instalação
 
-O `edne-correios-loader` pode ser instalado através do `pip`:
+Se você tem [uv](https://docs.astral.sh/uv/) instalado, pode executar o `edne-correios-loader`
+diretamente sem precisar instalar:
+
+```shell
+uvx edne-correios-loader load --database-url sqlite:///dne.db
+```
+
+Para bancos de dados que necessitam de drivers adicionais, como PostgreSQL, use a opção
+`--from` com o extra correspondente:
+
+```shell
+uvx --from 'edne-correios-loader[postgresql]' edne-correios-loader load \
+  --database-url postgresql://user:pass@localhost:5432/mydb
+```
+
+Caso prefira instalar o pacote, o `edne-correios-loader` pode ser instalado através do `pip`:
 
 ```shell
 pip install edne-correios-loader
@@ -187,7 +202,7 @@ edne-correios-loader load \
 A saída do comando varia conforme as opções utilizadas, mas deve ser
 parecida com o seguinte:
 ```
-Starting DNE Correios Loader v0.1.1
+Starting DNE Correios Loader v1.0.0
 
 Connecting to database...
 
@@ -370,7 +385,7 @@ Se algo der errado durante a atualização, a transação será desfeita e os da
 ## Testes
 
 Para executar os testes, é necessário a instalação do [Docker](https://www.docker.com/) e do
-[gerenciador de projetos Python Hatch](https://github.com/pypa/hatch). Após a instalação:
+[uv](https://docs.astral.sh/uv/). Após a instalação:
 1. Clone o projeto:
   ```shell
   git clone https://github.com/cauethenorio/edne-correios-loader
@@ -380,9 +395,9 @@ Para executar os testes, é necessário a instalação do [Docker](https://www.d
   cd edne-correios-loader/tests
   docker compose up -d
   ```
-3. Execute os testes usando o `hatch`:
+3. Execute os testes usando o `uv`:
   ```shell
-  hatch run all:test
+  uv run pytest tests
   ``` 
 
 ## Licença

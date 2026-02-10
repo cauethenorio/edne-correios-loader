@@ -7,29 +7,26 @@
     dynamic = ["version"]
     description = "Load Brazilian Correios' e-DNE Basico text files into your database to enable CEP search"
     readme = "README.md"
-    requires-python = ">=3.8"
+    requires-python = ">=3.10"
     license = "MIT"
     keywords = ["Correios", "CEP", "endereço", "address", "DNE", "eDNE", "Brasil"]
     authors = [
         { name = "Cauê Thenório", email = "caue@thenorio.com.br" },
     ]
     classifiers = [
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ]
     dependencies = [
-        "click~=8.1",
+        "click~=8.3",
         "sqlalchemy~=2.0",
-        "toposort~=1.1; python_version < '3.9'"
     ]
 
     [project.urls]
@@ -53,63 +50,24 @@
 [tool.hatch.build.targets.wheel]
     packages = ["src/edne_correios_loader"]
 
-[tool.hatch.envs.default]
-    python = "3.11"
-    dependencies = [
+[dependency-groups]
+    dev = [
         "coverage[toml]>=6.5",
         "pytest",
-        "pytest-mock", # use mock/patch as fixtures
-        "faker", # generate sample data
-        "pdbpp", # improve debug prompt
-        "python-dotenv", # read docker container data in tests
-        "psycopg-binary", # connect to postgres during tests
-        "pymysql", # connect to mysql during tests
-        "cryptography", # required by pymysql
-        "testcontainers-postgres", # run postgres container on demand during tests
-        "testcontainers-mysql", # run mysql container on demand during tests
+        "pytest-mock",
+        "faker",
+        "pdbpp",
+        "python-dotenv",
+        "psycopg[binary]",
+        "pymysql",
+        "cryptography",
+        "ruff",
+        "testcontainers-postgres",
+        "testcontainers-mysql",
     ]
-
-    [tool.hatch.envs.default.scripts]
-        test = "pytest {args:tests}"
-        test-cov = "coverage run -m pytest {args:tests}"
-        cov-report = [
-            "- coverage combine",
-            "coverage html",
-        ]
-        cov = [
-            "test-cov",
-            "cov-report",
-        ]
-
-[[tool.hatch.envs.all.matrix]]
-    python = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
-
-[tool.hatch.envs.lint]
-    detached = true
-    dependencies = [
-        "black>=23.1.0",
-        "ruff>=0.0.243",
-    ]
-    [tool.hatch.envs.lint.scripts]
-        style = [
-            "ruff check {args:.}",
-            "ruff format --diff {args:.}",
-        ]
-        fmt = [
-            "ruff format {args:.}",
-            "ruff --fix {args:.}",
-            "style",
-        ]
-        all = [
-            "style",
-        ]
-
-[tool.black]
-    target-version = ["py38"]
-    line-length = 88
 
 [tool.ruff]
-    target-version = "py38"
+    target-version = "py310"
     line-length = 88
     src = ["src", "tests"]
 

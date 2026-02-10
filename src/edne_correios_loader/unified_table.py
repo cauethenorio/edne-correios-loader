@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, Iterator
+from collections.abc import Iterable, Iterator
 
 import sqlalchemy as sa
 

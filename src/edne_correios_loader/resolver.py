@@ -5,7 +5,7 @@ import urllib.error
 import urllib.request
 import zipfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 from .exc import DneResolverError
@@ -37,9 +37,9 @@ class DneResolver:
     Returns the path to the resolved DNE folder.
     """
 
-    dne_source: Union[str, None]
+    dne_source: str | None
 
-    def __init__(self, dne_source: Union[str, None] = None):
+    def __init__(self, dne_source: str | None = None):
         self.dne_source = dne_source
 
         # keep track of temporary files to be removed
@@ -219,7 +219,7 @@ def looks_like_a_url(url):
     return all([result.scheme, result.netloc, result.scheme in ("http", "https")])
 
 
-def zip_contains_dne_basico_zip_file(zipfile: "ZipFile") -> Union[str, None]:
+def zip_contains_dne_basico_zip_file(zipfile: "ZipFile") -> str | None:
     """
     Check if the provided ZIP file contains a DNE Basico ZIP file.
     If true, returns the path to the DNE Basico ZIP file.

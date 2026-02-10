@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Type, Union
 
 from .dbwriter import DneDatabaseWriter
 from .resolver import DneResolver
@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class DneLoader:
-    DneResolver: Type[DneResolver] = DneResolver
-    DneDatabaseWriter: Type[DneDatabaseWriter] = DneDatabaseWriter
+    DneResolver: type[DneResolver] = DneResolver
+    DneDatabaseWriter: type[DneDatabaseWriter] = DneDatabaseWriter
 
     database_url: str
     dne_source: str
@@ -22,7 +22,7 @@ class DneLoader:
         self,
         database_url: str,
         *,
-        dne_source: Union[str, None] = None,
+        dne_source: str | None = None,
     ):
         self.database_url = database_url
         self.dne_source = dne_source
