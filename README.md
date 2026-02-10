@@ -42,7 +42,22 @@ pelos Correios.
 
 ## Instalação
 
-O `edne-correios-loader` pode ser instalado através do `pip`:
+Se você tem [uv](https://docs.astral.sh/uv/) instalado, pode executar o `edne-correios-loader`
+diretamente sem precisar instalar:
+
+```shell
+uvx edne-correios-loader load --database-url sqlite:///dne.db
+```
+
+Para bancos de dados que necessitam de drivers adicionais, como PostgreSQL, use a opção
+`--from` com o extra correspondente:
+
+```shell
+uvx --from 'edne-correios-loader[postgresql]' edne-correios-loader load \
+  --database-url postgresql://user:pass@localhost:5432/mydb
+```
+
+Caso prefira instalar o pacote, o `edne-correios-loader` pode ser instalado através do `pip`:
 
 ```shell
 pip install edne-correios-loader

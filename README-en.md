@@ -42,7 +42,22 @@ released biweekly by Correios.
 
 ## Installation
 
-The `edne-correios-loader` can be installed via `pip`:
+If you have [uv](https://docs.astral.sh/uv/) installed, you can run `edne-correios-loader`
+directly without installing:
+
+```shell
+uvx edne-correios-loader load --database-url sqlite:///dne.db
+```
+
+For databases that require additional drivers, such as PostgreSQL, use the `--from` option
+with the corresponding extra:
+
+```shell
+uvx --from 'edne-correios-loader[postgresql]' edne-correios-loader load \
+  --database-url postgresql://user:pass@localhost:5432/mydb
+```
+
+If you prefer to install the package, `edne-correios-loader` can be installed via `pip`:
 
 ```shell
 pip install edne-correios-loader
