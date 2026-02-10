@@ -384,7 +384,7 @@ If something goes wrong during the update, the transaction will be rolled back a
 ## Tests
 
 To run the tests, you need to have [Docker](https://www.docker.com/) and
-[Python project manager Hatch](https://github.com/pypa/hatch) installed. After installation:
+[uv](https://docs.astral.sh/uv/) installed. After installation:
 1. Clone the project:
   ```shell
   git clone https://github.com/cauethenorio/edne-correios-loader
@@ -394,9 +394,9 @@ To run the tests, you need to have [Docker](https://www.docker.com/) and
   cd edne-correios-loader/tests
   docker compose up -d
   ```
-3. Execute the tests using `hatch`:
+3. Execute the tests using `uv`:
   ```shell
-  hatch run test
+  uv run pytest tests
   ``` 
 
 ## License

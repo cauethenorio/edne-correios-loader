@@ -385,7 +385,7 @@ Se algo der errado durante a atualização, a transação será desfeita e os da
 ## Testes
 
 Para executar os testes, é necessário a instalação do [Docker](https://www.docker.com/) e do
-[gerenciador de projetos Python Hatch](https://github.com/pypa/hatch). Após a instalação:
+[uv](https://docs.astral.sh/uv/). Após a instalação:
 1. Clone o projeto:
   ```shell
   git clone https://github.com/cauethenorio/edne-correios-loader
@@ -395,9 +395,9 @@ Para executar os testes, é necessário a instalação do [Docker](https://www.d
   cd edne-correios-loader/tests
   docker compose up -d
   ```
-3. Execute os testes usando o `hatch`:
+3. Execute os testes usando o `uv`:
   ```shell
-  hatch run all:test
+  uv run pytest tests
   ``` 
 
 ## Licença
