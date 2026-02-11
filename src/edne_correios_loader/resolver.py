@@ -1,5 +1,4 @@
 import logging
-import shutil
 import tempfile
 import urllib.error
 import urllib.request
@@ -41,27 +40,34 @@ class DneResolver:
 
     def __init__(self, dne_source: str | None = None):
         self.dne_source = dne_source
+        self._temp_dir = None
 
-        # keep track of temporary files to be removed
-        self.temp_artifacts = []
+    @property
+    def temp_dir(self) -> str:
+        """
+        Lazily create temp dir when necessary
+        """
+        if self._temp_dir is None:
+            self._temp_dir = tempfile.TemporaryDirectory()
+        return self._temp_dir.name
 
     def __enter__(self):
         try:
             logger.info("Resolving DNE source...", extra={"indentation": 0})
             return self.resolve_dne_source(self.dne_source)
         except Exception:
-            self.remove_temp_artifacts()
+            self.cleanup()
             raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_val and self.temp_artifacts:
+        if exc_val and self._temp_dir is not None:
             logger.warning(
                 "Something went wrong. Removing temporary files...",
                 extra={"indentation": 0},
             )
-        self.remove_temp_artifacts()
+        self.cleanup()
 
-    def resolve_dne_source(self, dne_source: str):
+    def resolve_dne_source(self, dne_source: str | None) -> Path:
         if dne_source is None:
             logger.info(
                 "No DNE source provided, the latest DNE will be downloaded from "
@@ -72,24 +78,24 @@ class DneResolver:
 
         # if the provided source looks like a URL, download it
         if looks_like_a_url(dne_source):
-            logger.debug("Source identified as URL")
+            logger.debug("Source identified as URL: %s", dne_source)
             dne_source = self.download_dne(dne_source)
 
             logger.debug('DNE downloaded to "%s"', dne_source)
 
+        dne_source_path = Path(dne_source)
+
         # if the provided source is a file, try to unzip it
-        if Path(dne_source).is_file():
-            dne_source = self.resolve_file_source(dne_source)
-            # remove no more needed temp files/dirs
-            self.remove_temp_artifacts(keep_last=True)
+        if dne_source_path.is_file():
+            dne_source_path = self.resolve_file_source(dne_source_path)
 
-        if (dne_dir := Path(dne_source)).is_dir():
-            return self.resolve_dir_source(dne_dir)
+        if dne_source_path.is_dir():
+            return self.resolve_dir_source(dne_source_path)
 
-        msg = f"DNE source not found: {dne_source}"
+        msg = f"DNE source not found: {dne_source_path}"
         raise DneResolverError(msg)
 
-    def resolve_file_source(self, dne_source: str):
+    def resolve_file_source(self, dne_source: Path) -> Path:
         try:
             with zipfile.ZipFile(dne_source, mode="r") as archive:
                 logger.debug("Source identified as ZIP file: %s", dne_source)
@@ -105,8 +111,10 @@ class DneResolver:
                         "Source is as ZIP file containing a DNE Basico ZIP file"
                     )
                     # if the ZIP file contains a DNE Basico ZIP file, extract it
-                    temp_dir = tempfile.mkdtemp()
-                    self.temp_artifacts.append(temp_dir)
+                    temp_dir = (
+                        Path(self.temp_dir) / "extracted_zip_containing_dne_basico"
+                    )
+                    temp_dir.mkdir()
 
                     logger.debug(
                         'Extracting "%s" to "%s"',
@@ -126,8 +134,8 @@ class DneResolver:
                 ]
 
                 if valid_dne_files:
-                    temp_dir = tempfile.mkdtemp()
-                    self.temp_artifacts.append(temp_dir)
+                    temp_dir = Path(self.temp_dir) / "extracted_dne_files"
+                    temp_dir.mkdir()
 
                     logger.debug(
                         "Source is a DNE Basico ZIP file, extracting %s files to %s",
@@ -147,7 +155,7 @@ class DneResolver:
             msg = f"Source is not a valid ZIP file: {dne_source}"
             raise DneResolverError(msg) from e
 
-    def resolve_dir_source(self, dne_dir: Path):
+    def resolve_dir_source(self, dne_dir: Path) -> Path:
         # assert all the data files are present
         for table in TableSetEnum.ALL_TABLES.to_populate:
             # check if there are source files for all tables to be created
@@ -167,16 +175,14 @@ class DneResolver:
         Download zipped DNE and returns the path to the downloaded file.
         """
         bs = 1024 * 8
+        download_path = Path(self.temp_dir) / "download.zip"
 
         try:
             with urllib.request.urlopen(url) as response:  # noqa: S310
                 total_size = int(response.headers.get("Content-Length", -1))
                 self.download_report_hook(0, total_size, "start")
 
-                with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-                    # add downloaded file to the list of files to be removed
-                    self.temp_artifacts.append(tmp_file.name)
-
+                with download_path.open("wb") as tmp_file:
                     while block := response.read(bs):
                         tmp_file.write(block)
                         self.download_report_hook(len(block), total_size, "progress")
@@ -187,28 +193,19 @@ class DneResolver:
             msg = f"Failed to download DNE from {url}"
             raise DneResolverError(msg) from e
 
-        return tmp_file.name
+        return str(download_path)
 
     def download_report_hook(self, read: int, total: int, hook_type: str):
         pass
 
-    def remove_temp_artifacts(self, *, keep_last: bool = False):
+    def cleanup(self):
         """
         Remove all temporary files created by the resolver.
         """
-
-        while num_artifacts := len(self.temp_artifacts):
-            if num_artifacts < 2 and keep_last:  # noqa: PLR2004
-                return
-
-            to_remove = self.temp_artifacts.pop(0)
-
-            if Path(to_remove).is_file():
-                logger.debug("Removing temporary file %s", to_remove)
-                Path(to_remove).unlink()
-            else:
-                logger.debug("Removing temporary directory %s", to_remove)
-                shutil.rmtree(to_remove)
+        if self._temp_dir is not None:
+            logger.debug("Removing temporary directory %s", self._temp_dir.name)
+            self._temp_dir.cleanup()
+            self._temp_dir = None
 
 
 def looks_like_a_url(url):
