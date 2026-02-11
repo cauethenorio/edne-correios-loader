@@ -1,3 +1,6 @@
+### (unreleased)
+    * Attempt to fix temporary file handling on Windows (WinError 32) (fixes #4)
+
 ### v1.0.0 (2026-02-10)
     * Dropped Python 3.8 and 3.9 support, which reached EOL
     * Added Python 3.14 support
