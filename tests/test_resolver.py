@@ -75,23 +75,22 @@ def corrupted_zip_file() -> str:
 def assert_temp_artifacts_are_removed():
     @contextlib.contextmanager
     def assert_temp_artifacts_are_removed_func(url):
-        with mock.patch.object(
-            DneResolver, "remove_temp_artifacts", autospec=True
-        ) as remove_temp_artifacts:
+        with mock.patch.object(DneResolver, "cleanup", autospec=True) as cleanup:
             resolver = DneResolver(url)
             yield resolver
 
-        # assert the function was called
-        remove_temp_artifacts.assert_called()
+        # assert cleanup was called
+        cleanup.assert_called()
 
-        temp_artifacts = resolver.temp_artifacts[:]
-        # assert the temp files are still there
-        assert all(Path(p).exists() for p in temp_artifacts)
+        # assert the temp dir still exists (cleanup was mocked)
+        assert resolver._temp_dir is not None
+        temp_path = Path(resolver._temp_dir.name)
+        assert temp_path.exists()
 
-        # run for real
-        resolver.remove_temp_artifacts()
-        # assert it removed all temp artifacts
-        assert all(not Path(p).exists() for p in temp_artifacts)
+        # run cleanup for real
+        resolver.cleanup()
+        # assert it removed the temp directory
+        assert not temp_path.exists()
 
     return assert_temp_artifacts_are_removed_func
 
@@ -290,8 +289,7 @@ def test_resolver_removes_temporary_artifacts_after_resolving_url(
             with resolver as dne_dir:
                 assert has_a_dne_file(dne_dir)
 
-            # zip, extracted outer zip, extracted inner zip
-            assert len(resolver.temp_artifacts) == 3
+            assert resolver._temp_dir is not None
 
 
 def test_resolver_removes_temporary_artifacts_if_errors_out_resolving_the_source(
@@ -307,7 +305,7 @@ def test_resolver_removes_temporary_artifacts_if_errors_out_resolving_the_source
             with pytest.raises(DneResolverError), resolver:
                 pass  # pragma: no cover
 
-            assert len(resolver.temp_artifacts) > 0
+            assert resolver._temp_dir is not None
 
 
 def test_resolver_removes_temporary_artifacts_if_inner_code_errors_out(
@@ -319,5 +317,4 @@ def test_resolver_removes_temporary_artifacts_if_inner_code_errors_out(
                 msg = "Some unexpected error here"
                 raise ValueError(msg)
 
-            # zip, extracted inner zip
-            assert len(resolver.temp_artifacts) == 2
+            assert resolver._temp_dir is not None
