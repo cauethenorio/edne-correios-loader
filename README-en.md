@@ -201,7 +201,7 @@ edne-correios-loader load \
 The command output may vary depending on the options used, but it should be
 similar to the following:
 ```
-Starting DNE Correios Loader v1.0.0
+Starting DNE Correios Loader v1.1.0
 
 Connecting to database...
 
