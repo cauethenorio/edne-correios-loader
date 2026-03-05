@@ -150,9 +150,7 @@ def test_get_table_files_glob_uses_original_name_for_renamed_tables():
 def test_get_table_files_glob_preserves_custom_file_glob():
     metadata = build_metadata({"log_logradouro": "logradouros"})
 
-    assert (
-        get_table_files_glob("logradouros", metadata) == "LOG_LOGRADOURO_*.TXT"
-    )
+    assert get_table_files_glob("logradouros", metadata) == "LOG_LOGRADOURO_*.TXT"
 
 
 def test_get_table_files_glob_returns_none_for_unified_table():
@@ -166,18 +164,14 @@ def test_get_table_files_glob_returns_none_for_unified_table():
 
 @pytest.fixture
 def dne_resolver(mocker):
-    mock = mocker.patch(
-        "edne_correios_loader.loader.DneLoader.DneResolver"
-    )
+    mock = mocker.patch("edne_correios_loader.loader.DneLoader.DneResolver")
     mock.return_value.__enter__.return_value = mock.return_value
     return mock
 
 
 @pytest.fixture
 def db_writer(mocker):
-    mock = mocker.patch(
-        "edne_correios_loader.loader.DneLoader.DneDatabaseWriter"
-    )
+    mock = mocker.patch("edne_correios_loader.loader.DneLoader.DneDatabaseWriter")
     mock.return_value.__enter__.return_value = mock.return_value
     return mock
 

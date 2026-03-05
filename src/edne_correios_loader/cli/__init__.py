@@ -173,9 +173,7 @@ def query_cep(database_url, cep_table_name, cep):
     Query a CEP from the database to ensure it was correctly populated.
     """
     try:
-        cep_address = CepQuerier(
-            database_url, cep_table_name=cep_table_name
-        ).query(cep)
+        cep_address = CepQuerier(database_url, cep_table_name=cep_table_name).query(cep)
     except Exception as e:
         logger.error(e)  # noqa: TRY400
         sys.exit(1)

@@ -141,9 +141,7 @@ def build_metadata(table_names: TableNameResolver | None = None) -> MetaData:
             comment="CEP inicial da UF",
             nullable=False,
         ),
-        Column(
-            "ufe_cep_fim", String(8), comment="CEP final da UF", nullable=False
-        ),
+        Column("ufe_cep_fim", String(8), comment="CEP final da UF", nullable=False),
         info=info("log_faixa_uf"),
     )
 
@@ -176,9 +174,7 @@ def build_metadata(table_names: TableNameResolver | None = None) -> MetaData:
             comment="Sigla da UF",
             nullable=False,
         ),
-        Column(
-            "loc_no", String(72), comment="Nome da localidade", nullable=False
-        ),
+        Column("loc_no", String(72), comment="Nome da localidade", nullable=False),
         Column("cep", String(8), index=True, comment="CEP da localidade"),
         Column(
             "loc_in_sit",
@@ -253,9 +249,7 @@ def build_metadata(table_names: TableNameResolver | None = None) -> MetaData:
             primary_key=True,
             comment="CEP inicial da localidade",
         ),
-        Column(
-            "loc_cep_fim", String(8), comment="CEP final da localidade"
-        ),
+        Column("loc_cep_fim", String(8), comment="CEP final da localidade"),
         Column(
             "loc_tipo_faixa",
             Enum(
@@ -274,9 +268,7 @@ def build_metadata(table_names: TableNameResolver | None = None) -> MetaData:
     log_bairro = Table(
         n("log_bairro"),
         metadata,
-        Column(
-            "bai_nu", Integer, primary_key=True, comment="Chave do bairro"
-        ),
+        Column("bai_nu", Integer, primary_key=True, comment="Chave do bairro"),
         Column("ufe_sg", String(2), comment="Sigla da UF", nullable=False),
         Column(
             "loc_nu",
@@ -285,9 +277,7 @@ def build_metadata(table_names: TableNameResolver | None = None) -> MetaData:
             comment="Chave da localidade",
             nullable=False,
         ),
-        Column(
-            "bai_no", String(72), comment="Nome do bairro", nullable=False
-        ),
+        Column("bai_no", String(72), comment="Nome do bairro", nullable=False),
         Column(
             "bai_no_abrev",
             String(36),
@@ -365,9 +355,7 @@ def build_metadata(table_names: TableNameResolver | None = None) -> MetaData:
             comment="Chave da localidade",
             nullable=False,
         ),
-        Column(
-            "cpc_no", String(72), comment="Nome da CPC", nullable=False
-        ),
+        Column("cpc_no", String(72), comment="Nome da CPC", nullable=False),
         Column(
             "cpc_endereco",
             String(100),
@@ -701,9 +689,7 @@ def build_metadata(table_names: TableNameResolver | None = None) -> MetaData:
     Table(
         n("ect_pais"),
         metadata,
-        Column(
-            "pai_sg", String(2), primary_key=True, comment="Sigla do país"
-        ),
+        Column("pai_sg", String(2), primary_key=True, comment="Sigla do país"),
         Column(
             "pai_sg_alternativa",
             String(3),
@@ -714,12 +700,8 @@ def build_metadata(table_names: TableNameResolver | None = None) -> MetaData:
             String(72),
             comment="Nome do país em português",
         ),
-        Column(
-            "pai_no_ingles", String(72), comment="Nome do país em inglês"
-        ),
-        Column(
-            "pai_no_frances", String(72), comment="Nome do país em francês"
-        ),
+        Column("pai_no_ingles", String(72), comment="Nome do país em inglês"),
+        Column("pai_no_frances", String(72), comment="Nome do país em francês"),
         Column(
             "pai_abreviatura",
             String(36),

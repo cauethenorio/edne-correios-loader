@@ -73,9 +73,7 @@ def test_cli_load_command_accepts_use_default_options(mocked_dne_loader):
     runner = CliRunner()
     result = runner.invoke(load, ["-db", db_url])
 
-    mocked_dne_loader.assert_called_once_with(
-        db_url, dne_source=None, table_names=None
-    )
+    mocked_dne_loader.assert_called_once_with(db_url, dne_source=None, table_names=None)
     mocked_dne_loader.return_value.load.assert_called_once_with(
         table_set=TableSetEnum.UNIFIED_CEP_ONLY
     )
@@ -140,9 +138,12 @@ def test_cli_load_with_multiple_table_names(mocked_dne_loader):
     result = runner.invoke(
         load,
         [
-            "-db", "db-url",
-            "--table-name", "cep_unificado=my_cep",
-            "--table-name", "log_localidade=my_loc",
+            "-db",
+            "db-url",
+            "--table-name",
+            "cep_unificado=my_cep",
+            "--table-name",
+            "log_localidade=my_loc",
         ],
     )
 
@@ -172,9 +173,7 @@ def test_cli_load_table_name_rejects_invalid_format():
 
 def test_cli_load_table_name_rejects_unknown_table():
     runner = CliRunner()
-    result = runner.invoke(
-        load, ["-db", "db-url", "--table-name", "nonexistent=foo"]
-    )
+    result = runner.invoke(load, ["-db", "db-url", "--table-name", "nonexistent=foo"])
 
     assert result.exit_code == 2
     assert "Unknown table name" in result.output
@@ -223,9 +222,7 @@ def test_cli_query_cep_uses_default_table_name(mocked_cep_querier):
     runner = CliRunner()
     runner.invoke(query_cep, ["-db", "db-url", "12345678"])
 
-    mocked_cep_querier.assert_called_once_with(
-        "db-url", cep_table_name=None
-    )
+    mocked_cep_querier.assert_called_once_with("db-url", cep_table_name=None)
 
 
 def test_cli_query_cep_with_custom_table_name(mocked_cep_querier):
@@ -238,9 +235,7 @@ def test_cli_query_cep_with_custom_table_name(mocked_cep_querier):
     )
 
     assert result.exit_code == 0
-    mocked_cep_querier.assert_called_once_with(
-        "db-url", cep_table_name="my_cep"
-    )
+    mocked_cep_querier.assert_called_once_with("db-url", cep_table_name="my_cep")
 
 
 def test_cli_query_cep_capture_and_display_errors(mocked_cep_querier):
