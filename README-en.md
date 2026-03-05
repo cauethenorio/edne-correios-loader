@@ -4,107 +4,99 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/edne-correios-loader.svg)](https://pypi.org/project/edne-correios-loader)
 [![codecov](https://codecov.io/gh/cauethenorio/edne-correios-loader/graph/badge.svg?token=HP9C86U1LX)](https://codecov.io/gh/cauethenorio/edne-correios-loader)
 
-CLI to download and load the e-DNE Básico from Correios (Brazilian postal service) into a database
-(PostgreSQL, MySQL, SQLite, and others) and create a single table for querying postal codes (CEPs).
+Load all Brazilian postal codes (CEPs) into your database with a single command.
 
----
-
-### [Versão em português 🇧🇷](README.md)
-
-## Features
-
-- Automatically downloads the e-DNE Básico from the Correios website
-- Imports Correios' e-DNE Básico files into a database
-- Creates a unified table for querying postal codes (CEPs)
-- Supports databases like PostgreSQL, MySQL, SQLite, and others
-- Allows for data updates without service interruption
- 
-
-## Purpose
-
-The DNE (National Address Directory) is an official and exclusive database of Correios
-(Brazilian postal service), containing over 900 thousand postal codes from all over Brazil.
-It consists of addressing elements (description of streets, neighborhoods, municipalities,
-villages, hamlets) and Postal Address Codes - CEP.
-
-This database is available in two versions, the __e-DNE Basic__ and the __e-DNE Master__.
-Both contain all the postal codes in Brazil, with addressing elements down to the street section level,
-but they differ in format. The e-DNE Basic is composed of several text files (`.txt`) that need
-to be processed and transferred to a database in order to be queried. On the other hand, the
-e-DNE Master is a database in MS-Access format (`.mdb`) ready for use.
-
-This project automatically downloads the e-DNE Basic from the Correios website, processes the
-text files, and transfers them to a database. It also creates a unified table for querying
-postal codes (not included in the original DNE, where different types of postal codes are stored
-in separate tables) and allows your database to be updated with new versions of the e-DNE,
-released biweekly by Correios.
-
-
-## Installation
-
-If you have [uv](https://docs.astral.sh/uv/) installed, you can run `edne-correios-loader`
-directly without installing:
+The e-DNE (National Address Directory) from Correios (Brazilian postal service) contains over 1.5 million postal codes and is freely available. This tool automatically downloads the latest version, processes the files and loads them into any database (PostgreSQL, MySQL, SQLite, etc.), creating a unified table ready for querying.
 
 ```shell
 uvx edne-correios-loader load --database-url sqlite:///dne.db
 ```
 
-For databases that require additional drivers, such as PostgreSQL, use the `--from` option
-with the corresponding extra:
+---
+
+### [Versão em português 🇧🇷](README.md)
+
+
+## Quick Start
+
+With [uv](https://docs.astral.sh/uv/) installed, run directly without installing:
+
+```shell
+uvx edne-correios-loader load --database-url sqlite:///dne.db
+```
+
+For PostgreSQL:
 
 ```shell
 uvx --from 'edne-correios-loader[postgresql]' edne-correios-loader load \
   --database-url postgresql://user:pass@localhost:5432/mydb
 ```
 
-If you prefer to install the package, `edne-correios-loader` can be installed via `pip`:
+After the import, query CEPs:
+
+```shell
+$ edne-correios-loader query-cep --database-url sqlite:///dne.db 01001000
+{
+  "cep": "01001000",
+  "logradouro": "Praça da Sé",
+  "complemento": null,
+  "bairro": "Sé",
+  "municipio": "São Paulo",
+  "municipio_cod_ibge": 3550308,
+  "uf": "SP",
+  "nome": null
+}
+```
+
+
+## What it does
+
+- Automatically downloads the e-DNE Básico from the Correios website
+- Processes the text files and loads them into a database
+- Creates a unified table for querying postal codes (not included in the original DNE)
+- Supports PostgreSQL, MySQL, SQLite and other databases via SQLAlchemy
+- Allows customizing the names of created tables
+- Updates data without service interruption (atomic transaction)
+- Biweekly updates: just run the command again
+
+
+## Installation
+
+If you prefer to install the package instead of using `uvx`:
 
 ```shell
 pip install edne-correios-loader
 ```
 
-You will also need to install the database driver that will be used. Here are some
-instructions on how to install drivers for the most common databases:
+You will also need to install the database driver that will be used:
 
 ### PostgreSQL
 
-For PostgreSQL, the `psycopg2-binary` driver can be installed using an
-[extra](https://peps.python.org/pep-0508/#extras):
 ```shell
 pip install edne-correios-loader[postgresql]
 ```
 
 If there is no pre-compiled version of `psycopg2` for your operating system and Python version,
-you may need to install some libraries to be able to compile the driver. Another option is to install the
-`pg8000` driver for PostgreSQL, which is written entirely in Python and does not need to be compiled.
+another option is to install the `pg8000` driver, which is written entirely in Python.
 
 ### MySQL
 
-For MySQL, the `mysqlclient` driver can be installed using an
-[extra](https://peps.python.org/pep-0508/#extras):
 ```shell
 pip install edne-correios-loader[mysql]
 ```
 
 ### SQLite
 
-Python already provides the `sqlite3` library for communication with SQLite, so no
-additional instructions are needed.
+Python already provides the `sqlite3` library, so no additional instructions are needed.
 
 ### Others
 
-The `sqlalchemy` library is used for communication with the database, so any database
-supported by it can be used, such as Microsoft SQL Server and Oracle. To install
-the driver for a database not listed here, refer to the SQLAlchemy documentation:
-https://docs.sqlalchemy.org/en/20/dialects/index.html
-
+Any database supported by [SQLAlchemy](https://docs.sqlalchemy.org/en/20/dialects/index.html) can be used, such as Microsoft SQL Server and Oracle.
 
 
 ## Usage
 
 ### Command Line
-
-The data import can be executed via the command line using the `edne-correios-loader load` command.
 
 ```shell
 $ edne-correios-loader load --help
@@ -129,17 +121,16 @@ Options:
 
 #### Options
 
-The following options are available:
 - __`--dne-source`__ **(optional)**
 
   Source of the e-DNE to be imported. It can be:
     - A URL to a ZIP file with the e-DNE
     - The local path to a ZIP file with the e-DNE
     - The local path to a directory containing the e-DNE files
-    
+
   If this option is not provided, the latest e-DNE Basic will be automatically
   downloaded from the Correios website and used as the source.
- 
+
 
 - __`--database-url`__ **(required)**
 
@@ -156,7 +147,7 @@ The following options are available:
 
   More information about the URL format can be found in the
     [SQLAlchemy documentation](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls)
- 
+
 
 - __`--tables`__ **(optional)**
 
@@ -177,7 +168,7 @@ The following options are available:
 
   Example: `--table-name cep_unificado=correios_cep`
 
-  Useful for integrating with projects that follow naming conventions, such as Django.
+  Useful for integrating with projects that follow table naming conventions.
 
 
 - __`--verbose`__ **(optional)**
@@ -187,165 +178,31 @@ The following options are available:
 
 #### Usage Examples
 
-Imports the e-DNE Basic directly from the Correios website to a local SQLite database,
-keeping only the unified table:
+Imports the e-DNE Basic directly from the Correios website to a local SQLite database:
 ```shell
 edne-correios-loader load --database-url sqlite:///dne.db
 ```
 
-Imports the e-DNE Basic from a ZIP file to a local PostgreSQL database, keeping all
-tables with CEPs:
+Same for PostgreSQL:
 ```shell
-edne-correios-loader load \
-  --dne-source /path/to/dne.zip \
-  --database-url postgresql://user:pass@localhost:5432/mydb \
-  --tables cep-tables
+edne-correios-loader load --database-url postgresql://user:pass@localhost:5432/mydb
 ```
 
-Imports the e-DNE Basic from a directory to a local MySQL database, keeping all tables:
-```shell
-edne-correios-loader load \
-  --dne-source /path/to/dne/dir \
-  --database-url mysql+mysqlclient://user:pass@localhost:3306/mydb \
-  --tables all
-```
-
-Imports the e-DNE renaming the unified table to `correios_cep`:
+Renaming the unified table:
 ```shell
 edne-correios-loader load \
   --database-url sqlite:///dne.db \
   --table-name cep_unificado=correios_cep
 ```
 
-The command output may vary depending on the options used, but it should be
-similar to the following:
-```
-Starting DNE Correios Loader v1.1.0
-
-Connecting to database...
-
-Resolving DNE source...
-
-No DNE source provided, the latest DNE will be downloaded from Correios website
-Downloading DNE file  [####################################]  100%
-
-Creating tables:
-- cep_unificado
-- log_localidade
-- log_bairro
-- log_cpc
-- log_logradouro
-- log_grande_usuario
-- log_unid_oper
-
-Cleaning tables
-
-Populating table log_localidade
-  Reading LOG_LOCALIDADE.TXT
-  Inserted 11219 rows into table "log_localidade"
-
-Populating table log_bairro
-  Reading LOG_BAIRRO.TXT
-  Inserted 64456 rows into table "log_bairro"
-
-Populating table log_cpc
-  Reading LOG_CPC.TXT
-  Inserted 2133 rows into table "log_cpc"
-
-Populating table log_logradouro
-  Reading LOG_LOGRADOURO_RS.TXT
-  Reading LOG_LOGRADOURO_RR.TXT
-  Reading LOG_LOGRADOURO_SC.TXT
-  Reading LOG_LOGRADOURO_SP.TXT
-  Reading LOG_LOGRADOURO_SE.TXT
-  Reading LOG_LOGRADOURO_PI.TXT
-  Reading LOG_LOGRADOURO_MS.TXT
-  Reading LOG_LOGRADOURO_AP.TXT
-  Reading LOG_LOGRADOURO_MG.TXT
-  Reading LOG_LOGRADOURO_MT.TXT
-  Reading LOG_LOGRADOURO_AC.TXT
-  Reading LOG_LOGRADOURO_MA.TXT
-  Reading LOG_LOGRADOURO_TO.TXT
-  Reading LOG_LOGRADOURO_AL.TXT
-  Reading LOG_LOGRADOURO_CE.TXT
-  Reading LOG_LOGRADOURO_BA.TXT
-  Reading LOG_LOGRADOURO_AM.TXT
-  Reading LOG_LOGRADOURO_ES.TXT
-  Reading LOG_LOGRADOURO_PR.TXT
-  Reading LOG_LOGRADOURO_PE.TXT
-  Reading LOG_LOGRADOURO_GO.TXT
-  Reading LOG_LOGRADOURO_RN.TXT
-  Reading LOG_LOGRADOURO_RO.TXT
-  Reading LOG_LOGRADOURO_DF.TXT
-  Reading LOG_LOGRADOURO_RJ.TXT
-  Reading LOG_LOGRADOURO_PB.TXT
-  Reading LOG_LOGRADOURO_PA.TXT
-  Inserted 1236944 rows into table "log_logradouro"
-
-Populating table log_grande_usuario
-  Reading LOG_GRANDE_USUARIO.TXT
-  Inserted 18967 rows into table "log_grande_usuario"
-
-Populating table log_unid_oper
-  Reading LOG_UNID_OPER.TXT
-  Inserted 12534 rows into table "log_unid_oper"
-
-Populating unified CEP table
-  Populating unified CEP table with logradouros data
-    Inserted 1236944 CEPs from logradouros into table cep_unificado
-  Populating unified CEP table with localidades data
-    Inserted 4974 CEPs from localidades into table cep_unificado
-  Populating unified CEP table with localidades subordinadas data
-    Inserted 5311 CEPs from localidades subordinadas into table cep_unificado
-  Populating unified CEP table with normalized CPC data
-    Inserted 2133 CEPs from CPC into table cep_unificado
-  Populating unified CEP table with normalized grandes usuários data
-    Inserted 18967 CEPs from grandes usuários into table cep_unificado
-  Populating unified CEP table with normalized unidades operacionais data
-    Inserted 12534 CEPs from unidades operacionais into table cep_unificado
-  Inserted 1280863 rows into table "cep_unificado"
-
-Dropping tables
-  Dropping table log_faixa_uop
-  Dropping table log_var_log
-  Dropping table log_unid_oper
-  Dropping table log_num_sec
-  Dropping table log_grande_usuario
-  Dropping table log_var_bai
-  Dropping table log_logradouro
-  Dropping table log_faixa_cpc
-  Dropping table log_faixa_bairro
-  Dropping table log_var_loc
-  Dropping table log_faixa_localidade
-  Dropping table log_cpc
-  Dropping table log_bairro
-  Dropping table log_localidade
-  Dropping table log_faixa_uf
-  Dropping table ect_pais
-```
-
 #### CEP Query
 
 After the import, it's possible to check if the data was imported correctly by querying
-CEPs in the unified table using the command `edne-correios-loader query-cep`. Example:
-
-```shell
-$ edne-correios-loader query-cep --database-url mysql+mysqlclient://user:pass@localhost:3306/mydb 01001000
-{
-  "cep": "01001000",
-  "logradouro": "Praça da Sé",
-  "complemento": null,
-  "bairro": "Sé",
-  "municipio": "São Paulo",
-  "municipio_cod_ibge": 3550308,
-  "uf": "SP",
-  "nome": null
-}
-```
+CEPs in the unified table using the command `edne-correios-loader query-cep`.
 
 If the unified table was renamed during import, use the `--cep-table-name` option:
 ```shell
-$ edne-correios-loader query-cep --database-url sqlite:///dne.db --cep-table-name correios_cep 01001000
+edne-correios-loader query-cep --database-url sqlite:///dne.db --cep-table-name correios_cep 01001000
 ```
 
 
@@ -411,12 +268,8 @@ Every two weeks, Correios updates the e-DNE with new postal codes. To update you
 simply run the `load` command again. The latest e-DNE will be automatically downloaded from
 the Correios website.
 
-The command will delete the data from all e-DNE tables and import the data from the new e-DNE.
-After the import, the unified table is repopulated with the new data.
-
 The whole process is executed inside a transaction, so other clients connected to the database
 will continue to have access to the old data while the update is being executed.
-
 If something goes wrong during the update, the transaction will be rolled back and the old data will be preserved.
 
 
@@ -436,7 +289,7 @@ To run the tests, you need to have [Docker](https://www.docker.com/) and
 3. Execute the tests using `uv`:
   ```shell
   uv run pytest tests
-  ``` 
+  ```
 
 ## License
 
