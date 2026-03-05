@@ -6,7 +6,9 @@
 
 Carregue todos os CEPs do Brasil no seu banco de dados com um único comando.
 
-O e-DNE (Diretório Nacional de Endereços) dos Correios contém mais de 1,5 milhão de CEPs e está disponível gratuitamente. Esta ferramenta baixa automaticamente a versão mais recente, processa os arquivos e carrega em qualquer banco de dados (PostgreSQL, MySQL, SQLite, etc.), criando uma tabela unificada pronta para consulta.
+O e-DNE (Diretório Nacional de Endereços) dos Correios contém mais de 1,5 milhão de CEPs e está disponível gratuitamente.
+
+Esta ferramenta baixa automaticamente a versão mais recente, processa os arquivos e carrega em qualquer banco de dados (PostgreSQL, MySQL, SQLite, etc.), criando uma tabela unificada pronta para consulta.
 
 ```shell
 uvx edne-correios-loader load --database-url sqlite:///dne.db

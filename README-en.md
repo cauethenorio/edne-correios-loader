@@ -6,7 +6,9 @@
 
 Load all Brazilian postal codes (CEPs) into your database with a single command.
 
-The e-DNE (National Address Directory) from Correios (Brazilian postal service) contains over 1.5 million postal codes and is freely available. This tool automatically downloads the latest version, processes the files and loads them into any database (PostgreSQL, MySQL, SQLite, etc.), creating a unified table ready for querying.
+The e-DNE (National Address Directory) from Correios (Brazilian postal service) contains over 1.5 million postal codes and is freely available.
+
+This tool automatically downloads the latest version, processes the files and loads them into any database (PostgreSQL, MySQL, SQLite, etc.), creating a unified table ready for querying.
 
 ```shell
 uvx edne-correios-loader load --database-url sqlite:///dne.db
