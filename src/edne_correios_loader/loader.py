@@ -5,6 +5,7 @@ from pathlib import Path
 from .dbwriter import DneDatabaseWriter
 from .resolver import DneResolver
 from .table_set import TableSetEnum, get_table_files_glob
+from .tables import TableNameResolver, build_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -23,23 +24,30 @@ class DneLoader:
         database_url: str,
         *,
         dne_source: str | None = None,
+        table_names: TableNameResolver | None = None,
     ):
         self.database_url = database_url
         self.dne_source = dne_source
+        self.metadata = build_metadata(table_names)
 
     def load(self, table_set: TableSetEnum = TableSetEnum.UNIFIED_CEP_ONLY):
         # connect to database to ensure the URL is valid
         # connection will be closed when the context manager exits
-        with self.DneDatabaseWriter(self.database_url) as database_writer:
+        with self.DneDatabaseWriter(
+            self.database_url, self.metadata
+        ) as database_writer:
             # now that we know the URL is valid, download/extract the DNE file
             # temp files will be removed when the context manager exits
             with self.DneResolver(self.dne_source) as dne_path:
                 # all good, let's start by ensuring the tables exist and are empty
-                database_writer.create_tables(table_set.to_populate)
-                database_writer.clean_tables(table_set.to_populate)
+                tables_to_populate = table_set.to_populate(self.metadata)
+                tables_to_drop = table_set.to_drop(self.metadata)
 
-                for table in table_set.to_populate:
-                    files_glob = get_table_files_glob(table)
+                database_writer.create_tables(tables_to_populate)
+                database_writer.clean_tables(tables_to_populate)
+
+                for table in tables_to_populate:
+                    files_glob = get_table_files_glob(table, self.metadata)
 
                     if files_glob:
                         files = dne_path.glob(files_glob)
@@ -49,7 +57,7 @@ class DneLoader:
                         database_writer.populate_table(table, data)
 
             database_writer.populate_unified_table()
-            database_writer.drop_tables(table_set.to_drop)
+            database_writer.drop_tables(tables_to_drop)
 
 
 class TableFilesReader:

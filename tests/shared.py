@@ -21,7 +21,7 @@ class CreateTemporaryDneDirectory:
         shutil.rmtree(self.outerdir)
 
     def create_files(self):
-        for table in TableSetEnum.ALL_TABLES.to_populate:
+        for table in TableSetEnum.ALL_TABLES.to_populate():
             glob = get_table_files_glob(table)
 
             if glob is None:

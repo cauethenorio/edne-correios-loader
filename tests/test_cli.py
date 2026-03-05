@@ -73,7 +73,9 @@ def test_cli_load_command_accepts_use_default_options(mocked_dne_loader):
     runner = CliRunner()
     result = runner.invoke(load, ["-db", db_url])
 
-    mocked_dne_loader.assert_called_once_with(db_url, dne_source=None)
+    mocked_dne_loader.assert_called_once_with(
+        db_url, dne_source=None, table_names=None
+    )
     mocked_dne_loader.return_value.load.assert_called_once_with(
         table_set=TableSetEnum.UNIFIED_CEP_ONLY
     )
@@ -109,8 +111,76 @@ def test_cli_load_command_use_provided_options(mocked_dne_loader):
     )
 
     assert result.exit_code == 0
-    mocked_dne_loader.assert_called_once_with(db_url, dne_source=dne_source)
+    mocked_dne_loader.assert_called_once_with(
+        db_url, dne_source=dne_source, table_names=None
+    )
     mocked_dne_loader.return_value.load.assert_called_once_with(table_set=table_set)
+
+
+# --- --table-name ---
+
+
+def test_cli_load_with_single_table_name(mocked_dne_loader):
+    runner = CliRunner()
+    result = runner.invoke(
+        load,
+        ["-db", "db-url", "--table-name", "cep_unificado=my_cep"],
+    )
+
+    assert result.exit_code == 0
+    mocked_dne_loader.assert_called_once_with(
+        "db-url",
+        dne_source=None,
+        table_names={"cep_unificado": "my_cep"},
+    )
+
+
+def test_cli_load_with_multiple_table_names(mocked_dne_loader):
+    runner = CliRunner()
+    result = runner.invoke(
+        load,
+        [
+            "-db", "db-url",
+            "--table-name", "cep_unificado=my_cep",
+            "--table-name", "log_localidade=my_loc",
+        ],
+    )
+
+    assert result.exit_code == 0
+    mocked_dne_loader.assert_called_once_with(
+        "db-url",
+        dne_source=None,
+        table_names={"cep_unificado": "my_cep", "log_localidade": "my_loc"},
+    )
+
+
+def test_cli_load_table_name_rejects_invalid_format():
+    runner = CliRunner()
+
+    result = runner.invoke(load, ["-db", "db-url", "--table-name", "no_equals"])
+    assert result.exit_code == 2
+    assert "Expected format" in result.output
+
+    result = runner.invoke(load, ["-db", "db-url", "--table-name", "=value"])
+    assert result.exit_code == 2
+    assert "Expected format" in result.output
+
+    result = runner.invoke(load, ["-db", "db-url", "--table-name", "key="])
+    assert result.exit_code == 2
+    assert "Expected format" in result.output
+
+
+def test_cli_load_table_name_rejects_unknown_table():
+    runner = CliRunner()
+    result = runner.invoke(
+        load, ["-db", "db-url", "--table-name", "nonexistent=foo"]
+    )
+
+    assert result.exit_code == 2
+    assert "Unknown table name" in result.output
+
+
+# --- query-cep --cep-table-name ---
 
 
 def test_cli_query_cep_command_asks_for_required_arguments():
@@ -147,6 +217,30 @@ def test_cli_query_cep_uses_args_correctly(mocked_cep_querier):
     assert result.exit_code == 3
     assert result.stderr.strip() == "CEP not found"
     mocked_cep_querier.return_value.query.assert_called_once_with(cep)
+
+
+def test_cli_query_cep_uses_default_table_name(mocked_cep_querier):
+    runner = CliRunner()
+    runner.invoke(query_cep, ["-db", "db-url", "12345678"])
+
+    mocked_cep_querier.assert_called_once_with(
+        "db-url", cep_table_name=None
+    )
+
+
+def test_cli_query_cep_with_custom_table_name(mocked_cep_querier):
+    mocked_cep_querier.return_value.query.return_value = {"cep": "12345678"}
+
+    runner = CliRunner()
+    result = runner.invoke(
+        query_cep,
+        ["-db", "db-url", "--cep-table-name", "my_cep", "12345678"],
+    )
+
+    assert result.exit_code == 0
+    mocked_cep_querier.assert_called_once_with(
+        "db-url", cep_table_name="my_cep"
+    )
 
 
 def test_cli_query_cep_capture_and_display_errors(mocked_cep_querier):

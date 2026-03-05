@@ -2,21 +2,15 @@ import logging
 from collections.abc import Iterable, Iterator
 
 import sqlalchemy as sa
+from sqlalchemy import MetaData
 
-from .tables import (
-    cep_unificado,
-    log_bairro,
-    log_cpc,
-    log_grande_usuario,
-    log_localidade,
-    log_logradouro,
-    log_unid_oper,
-)
+from .tables import get_table
+from .tables import metadata as default_metadata
 
 logger = logging.getLogger(__name__)
 
 
-def cep_unificado_insert_from(rows: "sa.Select"):
+def cep_unificado_insert_from(cep_unificado, rows: "sa.Select"):
     return cep_unificado.insert().from_select(rows.selected_columns, rows.subquery())
 
 
@@ -34,7 +28,7 @@ def normalize_logradouro(rows: "sa.CursorResult") -> Iterator[dict]:
 
 
 def cep_unificado_insert_in_batches(
-    conn: sa.Connection, rows: Iterable[dict], batch_size: int = 500
+    conn: sa.Connection, cep_unificado, rows: Iterable[dict], batch_size: int = 500
 ):
     """
     Insert rows in the unified table in batches
@@ -54,7 +48,11 @@ def cep_unificado_insert_in_batches(
         conn.execute(cep_unificado.insert().values(batch))
 
 
-def select_logradouros_ceps() -> "sa.Select":
+def select_logradouros_ceps(metadata) -> "sa.Select":
+    log_logradouro = get_table(metadata, "log_logradouro")
+    log_bairro = get_table(metadata, "log_bairro")
+    log_localidade = get_table(metadata, "log_localidade")
+
     return sa.select(
         log_logradouro.c.cep.label("cep"),
         sa.case(
@@ -75,7 +73,9 @@ def select_logradouros_ceps() -> "sa.Select":
     )
 
 
-def select_localidades_ceps() -> "sa.Select":
+def select_localidades_ceps(metadata) -> "sa.Select":
+    log_localidade = get_table(metadata, "log_localidade")
+
     return (
         sa.select(
             log_localidade.c.cep.label("cep"),
@@ -92,7 +92,8 @@ def select_localidades_ceps() -> "sa.Select":
     )
 
 
-def select_localidades_subordinadas_ceps() -> "sa.Select":
+def select_localidades_subordinadas_ceps(metadata) -> "sa.Select":
+    log_localidade = get_table(metadata, "log_localidade")
     localidade_subordinada = log_localidade.alias()
 
     return (
@@ -116,7 +117,9 @@ def select_localidades_subordinadas_ceps() -> "sa.Select":
     )
 
 
-def select_cpc_ceps() -> "sa.Select":
+def select_cpc_ceps(metadata) -> "sa.Select":
+    log_cpc = get_table(metadata, "log_cpc")
+    log_localidade = get_table(metadata, "log_localidade")
     localidade_subordinada = log_localidade.alias()
 
     return (
@@ -143,7 +146,10 @@ def select_cpc_ceps() -> "sa.Select":
     )
 
 
-def select_grandes_usuarios_ceps() -> "sa.Select":
+def select_grandes_usuarios_ceps(metadata) -> "sa.Select":
+    log_grande_usuario = get_table(metadata, "log_grande_usuario")
+    log_bairro = get_table(metadata, "log_bairro")
+    log_localidade = get_table(metadata, "log_localidade")
     localidade_subordinada = log_localidade.alias()
 
     return (
@@ -172,7 +178,10 @@ def select_grandes_usuarios_ceps() -> "sa.Select":
     )
 
 
-def select_unidades_operacionais_ceps() -> "sa.Select":
+def select_unidades_operacionais_ceps(metadata) -> "sa.Select":
+    log_unid_oper = get_table(metadata, "log_unid_oper")
+    log_bairro = get_table(metadata, "log_bairro")
+    log_localidade = get_table(metadata, "log_localidade")
     localidade_subordinada = log_localidade.alias()
 
     return (
@@ -207,14 +216,20 @@ def select_unidades_operacionais_ceps() -> "sa.Select":
     )
 
 
-def populate_unified_table(conn: sa.Connection, insert_batch_size: int = 500):
+def populate_unified_table(
+    conn: sa.Connection,
+    metadata: MetaData = default_metadata,
+    insert_batch_size: int = 500,
+):
     """
     Query unifying rows from all tables with CEP address information
     """
+    cep_unificado = get_table(metadata, "cep_unificado")
+
     insert_from_selects = [
-        (select_logradouros_ceps(), "logradouros"),
-        (select_localidades_ceps(), "localidades"),
-        (select_localidades_subordinadas_ceps(), "localidades subordinadas"),
+        (select_logradouros_ceps(metadata), "logradouros"),
+        (select_localidades_ceps(metadata), "localidades"),
+        (select_localidades_subordinadas_ceps(metadata), "localidades subordinadas"),
     ]
 
     for select_stmt, name in insert_from_selects:
@@ -223,7 +238,7 @@ def populate_unified_table(conn: sa.Connection, insert_batch_size: int = 500):
             name,
             extra={"indentation": 1},
         )
-        conn.execute(cep_unificado_insert_from(select_stmt))
+        conn.execute(cep_unificado_insert_from(cep_unificado, select_stmt))
 
         inserted = conn.execute(
             sa.select(sa.func.count()).select_from(select_stmt.subquery())
@@ -241,9 +256,9 @@ def populate_unified_table(conn: sa.Connection, insert_batch_size: int = 500):
     # they are normalized via python, so this can run for different DBMSs
 
     selects_with_normalization = [
-        (select_cpc_ceps(), "CPC"),
-        (select_grandes_usuarios_ceps(), "grandes usuários"),
-        (select_unidades_operacionais_ceps(), "unidades operacionais"),
+        (select_cpc_ceps(metadata), "CPC"),
+        (select_grandes_usuarios_ceps(metadata), "grandes usuários"),
+        (select_unidades_operacionais_ceps(metadata), "unidades operacionais"),
     ]
 
     for select_stmt, name in selects_with_normalization:
@@ -255,6 +270,7 @@ def populate_unified_table(conn: sa.Connection, insert_batch_size: int = 500):
 
         cep_unificado_insert_in_batches(
             conn,
+            cep_unificado,
             normalize_logradouro(conn.execute(select_stmt).yield_per(1000)),
             batch_size=insert_batch_size,
         )

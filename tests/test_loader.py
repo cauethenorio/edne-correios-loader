@@ -40,14 +40,18 @@ def test_loader_create_populate_and_drop_correct_tables(
 ):
     table_files_reader = mocker.patch("edne_correios_loader.loader.TableFilesReader")
     loader = DneLoader(db_url, dne_source=dne_source)
+
+    tables_to_populate = table_set.to_populate(loader.metadata)
+    tables_to_drop = table_set.to_drop(loader.metadata)
+
     loader.load(table_set=table_set)
 
-    db_writer.return_value.create_tables.assert_called_once_with(table_set.to_populate)
-    db_writer.return_value.drop_tables.assert_called_once_with(table_set.to_drop)
+    db_writer.return_value.create_tables.assert_called_once_with(tables_to_populate)
+    db_writer.return_value.drop_tables.assert_called_once_with(tables_to_drop)
 
     assert db_writer.return_value.populate_table.call_args_list == [
         mocker.call(table_name, table_files_reader.return_value)
-        for table_name in table_set.to_populate
+        for table_name in tables_to_populate
         if table_name != "cep_unificado"
     ]
 

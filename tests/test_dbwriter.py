@@ -3,7 +3,11 @@ import sqlalchemy as sa
 
 from edne_correios_loader import TableSetEnum
 from edne_correios_loader.dbwriter import DneDatabaseWriter
-from edne_correios_loader.tables import log_bairro, log_localidade, log_logradouro
+from edne_correios_loader.tables import get_table, metadata
+
+log_localidade = get_table(metadata, "log_localidade")
+log_bairro = get_table(metadata, "log_bairro")
+log_logradouro = get_table(metadata, "log_logradouro")
 
 
 def reflect_metadata(engine):
@@ -28,8 +32,8 @@ def fetch_all(conn, table):
 @pytest.mark.parametrize(
     "table_set,final_tables",
     (
-        (TableSetEnum.ALL_TABLES, TableSetEnum.ALL_TABLES.to_populate),
-        (TableSetEnum.CEP_TABLES, TableSetEnum.CEP_TABLES.to_populate),
+        (TableSetEnum.ALL_TABLES, TableSetEnum.ALL_TABLES.to_populate()),
+        (TableSetEnum.CEP_TABLES, TableSetEnum.CEP_TABLES.to_populate()),
         (TableSetEnum.UNIFIED_CEP_ONLY, ["cep_unificado"]),
     ),
 )
@@ -44,14 +48,14 @@ def test_dbwriter_create_and_drop_correct_tables(
     external_tables = create_external_tables(engine)
 
     with DneDatabaseWriter(connection_url) as db_writer:
-        db_writer.create_tables(table_set.to_populate)
+        db_writer.create_tables(table_set.to_populate())
 
         reflected_metadata = reflect_metadata(db_writer.engine)
         existing_tables = set(list(reflected_metadata.tables) + external_tables)
 
-        assert existing_tables == set(table_set.to_populate + external_tables)
+        assert existing_tables == set(table_set.to_populate() + external_tables)
 
-        db_writer.drop_tables(table_set.to_drop)
+        db_writer.drop_tables(table_set.to_drop())
         db_writer.connection.commit()
 
         reflected_metadata = reflect_metadata(db_writer.engine)
@@ -65,7 +69,7 @@ def test_dbwriter_rollback_changes_on_error(
     localidades = generate_localidades(10)
 
     with DneDatabaseWriter(connection_url) as db_writer:
-        db_writer.create_tables(TableSetEnum.CEP_TABLES.to_populate)
+        db_writer.create_tables(TableSetEnum.CEP_TABLES.to_populate())
 
         db_writer.populate_table(
             "log_localidade", [stringify_row(row) for row in localidades]
@@ -101,7 +105,7 @@ def test_dbwriter_populate_tables_correctly(
 
     with DneDatabaseWriter(connection_url) as db_writer:
         # test inserting in batches
-        db_writer.create_tables(TableSetEnum.CEP_TABLES.to_populate)
+        db_writer.create_tables(TableSetEnum.CEP_TABLES.to_populate())
 
         db_writer.insert_buffer_size = 10
         db_writer.populate_table(
@@ -140,7 +144,7 @@ def test_dbwriter_is_able_to_populate_tables_with_fk_to_self(
     localidades[3][6] = localidades[0][0]
 
     with DneDatabaseWriter(connection_url) as db_writer:
-        db_writer.create_tables(TableSetEnum.CEP_TABLES.to_populate)
+        db_writer.create_tables(TableSetEnum.CEP_TABLES.to_populate())
 
         db_writer.populate_table(
             "log_localidade", [stringify_row(l) for l in localidades]
@@ -164,7 +168,7 @@ def test_dbwriter_clean_tables_correctly(
 
     with DneDatabaseWriter(connection_url) as db_writer:
         # test inserting in batches
-        db_writer.create_tables(TableSetEnum.CEP_TABLES.to_populate)
+        db_writer.create_tables(TableSetEnum.CEP_TABLES.to_populate())
 
         db_writer.insert_buffer_size = 10
         db_writer.populate_table(
@@ -180,7 +184,7 @@ def test_dbwriter_clean_tables_correctly(
         )
 
     with DneDatabaseWriter(connection_url) as db_writer:
-        db_writer.clean_tables(TableSetEnum.CEP_TABLES.to_populate)
+        db_writer.clean_tables(TableSetEnum.CEP_TABLES.to_populate())
 
     with sa.create_engine(connection_url).connect() as connection:
         assert fetch_all(connection, log_localidade) == []
@@ -195,4 +199,4 @@ def test_dbwriter_calls_populate_unified_table(mocker, connection_url):
 
     with DneDatabaseWriter(connection_url) as db_writer:
         db_writer.populate_unified_table()
-        populate_unified_table.assert_called_once_with(db_writer.connection)
+        populate_unified_table.assert_called_once_with(db_writer.connection, metadata)

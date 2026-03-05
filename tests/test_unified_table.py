@@ -239,7 +239,7 @@ def test_populate_unified_table_populates_correctly(connection_url):
             table = metadata.tables[table_name]
             connection.execute(table.insert(), rows)
 
-        populate_unified_table(connection, insert_batch_size=2)
+        populate_unified_table(connection, metadata, insert_batch_size=2)
 
         unified_table = metadata.tables["cep_unificado"]
         pks = [c.name for c in unified_table.primary_key]

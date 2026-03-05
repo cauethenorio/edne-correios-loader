@@ -4,7 +4,7 @@ from graphlib import TopologicalSorter
 
 import sqlalchemy as sa
 
-from .tables import metadata
+from .tables import metadata as default_metadata
 from .unified_table import populate_unified_table
 
 logger = logging.getLogger(__name__)
@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 class DneDatabaseWriter:
     engine: sa.Engine
     connection: sa.Connection
-    metadata: sa.MetaData = metadata
     insert_buffer_size = 1000
 
-    def __init__(self, database_url: str):
+    def __init__(self, database_url: str, metadata: sa.MetaData = default_metadata):
         self.engine = sa.create_engine(database_url, echo=False)
+        self.metadata = metadata
 
     def __enter__(self):
         logger.info("Connecting to database...", extra={"indentation": 0})
@@ -39,7 +39,7 @@ class DneDatabaseWriter:
         tables_names = "\n".join([f"- {t}" for t in tables])
 
         logger.info("Creating tables:\n%s", tables_names, extra={"indentation": 0})
-        metadata.create_all(self.engine, tables=metadata_tables)
+        self.metadata.create_all(self.engine, tables=metadata_tables)
 
     def clean_tables(self, tables: list[str]):
         logger.info("Cleaning tables", extra={"indentation": 0})
@@ -100,7 +100,7 @@ class DneDatabaseWriter:
 
     def populate_unified_table(self):
         logger.info("Populating unified CEP table", extra={"indentation": 0})
-        populate_unified_table(self.connection)
+        populate_unified_table(self.connection, self.metadata)
 
     @staticmethod
     def find_self_referencing_fks(table) -> str | None:

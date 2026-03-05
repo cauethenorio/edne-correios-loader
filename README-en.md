@@ -122,6 +122,7 @@ Options:
   --tables [unified-cep-only|cep-tables|all]
                                   Which tables to keep in the database after
                                   the import
+  --table-name <original=custom>  Rename a table: --table-name original=custom
   -v, --verbose                   Enables verbose mode.
   -h, --help                      Show this message and exit.
 ```
@@ -168,6 +169,17 @@ The following options are available:
   only the unified CEP table.
 
 
+- __`--table-name`__ **(optional)**
+
+  Allows customizing a table name in the database. Can be used multiple times
+  to rename several tables. The format is `original=custom`, where `original` is the
+  default table name and `custom` is the desired name.
+
+  Example: `--table-name cep_unificado=correios_cep`
+
+  Useful for integrating with projects that follow naming conventions, such as Django.
+
+
 - __`--verbose`__ **(optional)**
 
   Enables verbose mode, which displays DEBUG information useful for troubleshooting
@@ -196,6 +208,13 @@ edne-correios-loader load \
   --dne-source /path/to/dne/dir \
   --database-url mysql+mysqlclient://user:pass@localhost:3306/mydb \
   --tables all
+```
+
+Imports the e-DNE renaming the unified table to `correios_cep`:
+```shell
+edne-correios-loader load \
+  --database-url sqlite:///dne.db \
+  --table-name cep_unificado=correios_cep
 ```
 
 The command output may vary depending on the options used, but it should be
@@ -324,6 +343,11 @@ $ edne-correios-loader query-cep --database-url mysql+mysqlclient://user:pass@lo
 }
 ```
 
+If the unified table was renamed during import, use the `--cep-table-name` option:
+```shell
+$ edne-correios-loader query-cep --database-url sqlite:///dne.db --cep-table-name correios_cep 01001000
+```
+
 
 ### Python API
 
@@ -339,6 +363,9 @@ DneLoader(
   # Path or URL to the ZIP file or directory with e-DNE files (optional)
   # When omitted, the e-DNE will be automatically downloaded from the Correios website
   dne_source="/path/to/dne.zip",
+  # Customize table names in the database (optional)
+  # Accepts a dict or a callable that transforms the names
+  table_names={"cep_unificado": "correios_cep"},
 ).load(
   # define the tables to keep in the database after the import (optional)
   # When omitted, only the unified table is kept
@@ -347,11 +374,23 @@ DneLoader(
 )
 ```
 
+The `table_names` parameter also accepts a callable to transform all names:
+```python
+DneLoader(
+  'sqlite:///dne.db',
+  table_names=lambda name: f"dne_{name}",  # dne_cep_unificado, dne_log_localidade, etc.
+).load()
+```
+
 After the import, CEPs can be queried in the unified table using the `CepQuerier` class:
 ```python
 from edne_correios_loader import CepQuerier
 
-cep_querier = CepQuerier('postgresql://user:pass@localhost:5432/mydb')
+# If the table was renamed, provide the custom name
+cep_querier = CepQuerier(
+  'postgresql://user:pass@localhost:5432/mydb',
+  cep_table_name='correios_cep',  # optional, default: 'cep_unificado'
+)
 cep = cep_querier.query('01319010')
 
 assert cep == {
