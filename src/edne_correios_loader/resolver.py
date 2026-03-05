@@ -157,7 +157,7 @@ class DneResolver:
 
     def resolve_dir_source(self, dne_dir: Path) -> Path:
         # assert all the data files are present
-        for table in TableSetEnum.ALL_TABLES.to_populate:
+        for table in TableSetEnum.ALL_TABLES.to_populate():
             # check if there are source files for all tables to be created
             if (file_glob := get_table_files_glob(table)) and not any(
                 dne_dir.glob(file_glob)

@@ -1,6 +1,8 @@
 import enum
 
-from .tables import metadata
+from sqlalchemy import MetaData
+
+from .tables import metadata as default_metadata
 
 
 class TableSetEnum(enum.Enum):
@@ -12,15 +14,13 @@ class TableSetEnum(enum.Enum):
     CEP_TABLES = "cep-tables"
     ALL_TABLES = "all"
 
-    @property
-    def to_populate(self) -> list[str]:
+    def to_populate(self, metadata: MetaData = default_metadata) -> list[str]:
         if self.value == "all":
             return [t.name for t in metadata.sorted_tables]
 
-        return get_cep_tables()
+        return get_cep_tables(metadata)
 
-    @property
-    def to_drop(self) -> list[str]:
+    def to_drop(self, metadata: MetaData = default_metadata) -> list[str]:
         if self.value == "unified-cep-only":
             return [
                 t.name
@@ -31,7 +31,7 @@ class TableSetEnum(enum.Enum):
         return []
 
 
-def get_cep_tables() -> list[str]:
+def get_cep_tables(metadata: MetaData = default_metadata) -> list[str]:
     """
     Get the list of tables that are required for CEP search.
     """
@@ -48,14 +48,17 @@ def get_cep_tables() -> list[str]:
     return list(reversed(tables))
 
 
-def get_table_files_glob(table_name: str) -> str | None:
+def get_table_files_glob(
+    table_name: str, metadata: MetaData = default_metadata
+) -> str | None:
     """
     Get the file globs for each table.
-    Calculate from table name when not specified.
+    Calculate from original table name when not specified.
     """
     table = metadata.tables[table_name]
 
     if table.info.get("unified_table", False):
         return None
 
-    return table.info.get("file_glob", f"{table.name.upper()}.TXT")
+    original_name = table.info.get("original_name", table.name)
+    return table.info.get("file_glob", f"{original_name.upper()}.TXT")

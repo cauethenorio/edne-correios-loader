@@ -14,6 +14,7 @@ from edne_correios_loader.loader import logger as loader_logger
 from edne_correios_loader.resolver import DneResolver
 from edne_correios_loader.resolver import logger as resolver_logger
 from edne_correios_loader.table_set import TableSetEnum
+from edne_correios_loader.tables import DEFAULT_TABLE_NAMES
 from edne_correios_loader.unified_table import logger as unified_table_logger
 
 from .logger import add_verbose_option
@@ -46,6 +47,53 @@ class DneLoaderWithProgress(DneLoader):
     DneResolver = DneResolverWithDownloadProgress
 
 
+class TableNameParamType(click.ParamType):
+    """
+    Click parameter type for --table-name key=value pairs.
+    """
+
+    name = "key=value"
+
+    def convert(self, value, param, ctx):
+        if "=" not in value:
+            self.fail(
+                f"Expected format 'original=custom', got '{value}'",
+                param,
+                ctx,
+            )
+
+        key, _, custom = value.partition("=")
+        key = key.strip()
+        custom = custom.strip()
+
+        if not key or not custom:
+            self.fail(
+                f"Expected format 'original=custom', got '{value}'",
+                param,
+                ctx,
+            )
+
+        if key not in DEFAULT_TABLE_NAMES:
+            self.fail(
+                f"Unknown table name '{key}'. "
+                f"Valid names: {', '.join(DEFAULT_TABLE_NAMES)}",
+                param,
+                ctx,
+            )
+
+        return (key, custom)
+
+
+def parse_table_names(table_name):
+    """
+    Build table name mapping from --table-name pairs.
+    """
+    if not table_name:
+        return None
+
+    return dict(table_name)
+
+
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(version=__version__, prog_name="DNE Correios Loader")
 def edne_correios_loader(): ...  # pragma: no cover
@@ -74,10 +122,17 @@ def edne_correios_loader(): ...  # pragma: no cover
     help="Which tables to keep in the database after the import",
     default="unified-cep-only",
 )
+@click.option(
+    "--table-name",
+    type=TableNameParamType(),
+    multiple=True,
+    help="Rename a table: --table-name original=custom",
+    metavar="<original=custom>",
+)
 @add_verbose_option(
     [logger, loader_logger, resolver_logger, dbwriter_logger, unified_table_logger]
 )
-def load(dne_source, database_url, tables, verbose):
+def load(dne_source, database_url, tables, table_name, verbose):
     """
     Load DNE data into a database.
     """
@@ -85,9 +140,11 @@ def load(dne_source, database_url, tables, verbose):
     click.echo(click.style(f"Starting DNE Correios Loader v{__version__}", bold=True))
 
     try:
-        DneLoaderWithProgress(database_url, dne_source=dne_source).load(
-            table_set=TableSetEnum(tables)
-        )
+        table_names = parse_table_names(table_name)
+
+        DneLoaderWithProgress(
+            database_url, dne_source=dne_source, table_names=table_names
+        ).load(table_set=TableSetEnum(tables))
     except Exception as e:
         if verbose:
             logger.exception(e)  # noqa: TRY401
@@ -104,14 +161,19 @@ def load(dne_source, database_url, tables, verbose):
     required=True,
     metavar="<url>",
 )
+@click.option(
+    "--cep-table-name",
+    help="Custom name for the unified CEP table",
+    metavar="<name>",
+)
 @click.argument("cep")
 @edne_correios_loader.command()
-def query_cep(database_url, cep):
+def query_cep(database_url, cep_table_name, cep):
     """
     Query a CEP from the database to ensure it was correctly populated.
     """
     try:
-        cep_address = CepQuerier(database_url).query(cep)
+        cep_address = CepQuerier(database_url, cep_table_name=cep_table_name).query(cep)
     except Exception as e:
         logger.error(e)  # noqa: TRY400
         sys.exit(1)

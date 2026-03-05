@@ -77,7 +77,7 @@ def test_get_tables_files_glob():
     ],
 )
 def test_table_set_to_populate(table_set, tables_to_populate):
-    assert table_set.to_populate == tables_to_populate
+    assert table_set.to_populate() == tables_to_populate
 
 
 @pytest.mark.parametrize(
@@ -109,4 +109,4 @@ def test_table_set_to_populate(table_set, tables_to_populate):
     ],
 )
 def test_table_set_to_drop(table_set, tables_to_drop):
-    assert table_set.to_drop == tables_to_drop
+    assert table_set.to_drop() == tables_to_drop
