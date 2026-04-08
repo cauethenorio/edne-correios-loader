@@ -274,7 +274,6 @@ Todo o processo é executado em uma transação, portanto, outros clientes conec
 continuarão tendo acesso aos dados antigos enquanto a atualização é executada.
 Se algo der errado durante a atualização, a transação será desfeita e os dados antigos serão mantidos.
 
-
 ## Testes
 
 Para executar os testes, é necessário a instalação do [Docker](https://www.docker.com/) e do
@@ -292,6 +291,58 @@ Para executar os testes, é necessário a instalação do [Docker](https://www.d
   ```shell
   uv run pytest tests
   ```
+
+## ClickHouse
+
+Também é possível carregar o e-DNE diretamente no ClickHouse com o comando `sync-clickhouse`.
+
+### Instalação
+
+Para usar o suporte a ClickHouse, instale o extra correspondente:
+
+```shell
+pip install edne-correios-loader[clickhouse]
+```
+
+### Linha de comando
+
+Execução com configurações padrão (`localhost:9000`, banco `default`):
+
+```shell
+edne-correios-loader sync-clickhouse
+```
+
+Com servidor remoto e credenciais:
+
+```shell
+edne-correios-loader sync-clickhouse \
+  -ch clickhouse.example.com \
+  -cp 9000 \
+  -cdb dne \
+  -cu admin \
+  -cpw senha123
+```
+
+Com arquivo e-DNE específico:
+
+```shell
+edne-correios-loader sync-clickhouse \
+  -s ./dne_2026.zip \
+  --tables unified-cep-only
+```
+
+#### Opções principais
+
+- __`-s, --dne-source`__ caminho/URL com arquivo ou diretório do e-DNE
+- __`-ch, --clickhouse-host`__ host do servidor ClickHouse (padrão: `localhost`)
+- __`-cp, --clickhouse-port`__ porta do servidor ClickHouse (padrão: `9000`)
+- __`-cdb, --clickhouse-database`__ banco de dados (padrão: `default`)
+- __`-cu, --clickhouse-user`__ usuário (padrão: `default`)
+- __`-cpw, --clickhouse-password`__ senha (padrão: vazio)
+- __`--tables`__ tabelas a manter após importação (`unified-cep-only`, `cep-tables`, `all`)
+- __`--table-name`__ renomeia tabelas (`--table-name original=custom`)
+- __`--verbose`__ habilita logs detalhados
+
 
 ## Licença
 

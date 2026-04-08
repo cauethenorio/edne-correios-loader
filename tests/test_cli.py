@@ -9,6 +9,7 @@ from edne_correios_loader.cli import (
     edne_correios_loader,
     load,
     query_cep,
+    sync_clickhouse,
 )
 from edne_correios_loader.table_set import TableSetEnum
 
@@ -115,9 +116,6 @@ def test_cli_load_command_use_provided_options(mocked_dne_loader):
     mocked_dne_loader.return_value.load.assert_called_once_with(table_set=table_set)
 
 
-# --- --table-name ---
-
-
 def test_cli_load_with_single_table_name(mocked_dne_loader):
     runner = CliRunner()
     result = runner.invoke(
@@ -177,9 +175,6 @@ def test_cli_load_table_name_rejects_unknown_table():
 
     assert result.exit_code == 2
     assert "Unknown table name" in result.output
-
-
-# --- query-cep --cep-table-name ---
 
 
 def test_cli_query_cep_command_asks_for_required_arguments():
@@ -249,3 +244,76 @@ def test_cli_query_cep_capture_and_display_errors(mocked_cep_querier):
     assert result.exit_code == 1
     assert result.stderr.strip() == "ERROR: some nasty error"
     mocked_cep_querier.return_value.query.assert_called_once_with(cep)
+
+
+@pytest.fixture
+def mocked_clickhouse_writer(mocker):
+    return mocker.patch("edne_correios_loader.cli.ClickHouseWriter")
+
+
+@pytest.fixture
+def mocked_dne_resolver(mocker):
+    return mocker.patch("edne_correios_loader.cli.DneResolver")
+
+
+def test_cli_sync_clickhouse_command_uses_default_options(
+    mocked_clickhouse_writer, mocked_dne_resolver
+):
+    runner = CliRunner()
+    result = runner.invoke(sync_clickhouse, [])
+
+    mocked_clickhouse_writer.assert_called_once()
+    call_kwargs = mocked_clickhouse_writer.call_args[1]
+
+    assert call_kwargs["host"] == "localhost"
+    assert call_kwargs["port"] == 9000
+    assert call_kwargs["database"] == "default"
+    assert call_kwargs["user"] == "default"
+    assert call_kwargs["password"] == ""
+
+    assert result.exit_code == 0
+
+
+def test_cli_sync_clickhouse_command_accepts_custom_options(
+    mocked_clickhouse_writer, mocked_dne_resolver
+):
+    runner = CliRunner()
+    result = runner.invoke(
+        sync_clickhouse,
+        [
+            "-ch",
+            "clickhouse.example.com",
+            "-cp",
+            "9001",
+            "-cdb",
+            "analytics",
+            "-cu",
+            "admin",
+            "-cpw",
+            "secret123",
+        ],
+    )
+
+    mocked_clickhouse_writer.assert_called_once()
+    call_kwargs = mocked_clickhouse_writer.call_args[1]
+
+    assert call_kwargs["host"] == "clickhouse.example.com"
+    assert call_kwargs["port"] == 9001
+    assert call_kwargs["database"] == "analytics"
+    assert call_kwargs["user"] == "admin"
+    assert call_kwargs["password"] == "secret123"
+
+    assert result.exit_code == 0
+
+
+def test_cli_sync_clickhouse_command_show_error_when_failed(
+    mocked_clickhouse_writer, mocked_dne_resolver
+):
+    exc = Exception("Conexão recusada com ClickHouse")
+    mocked_clickhouse_writer.return_value.__enter__.side_effect = exc
+
+    runner = CliRunner()
+    result = runner.invoke(sync_clickhouse, [])
+
+    assert result.exit_code == 1
+    assert "Conexão recusada com ClickHouse" in result.stderr
