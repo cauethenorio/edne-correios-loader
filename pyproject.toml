@@ -40,6 +40,7 @@
     [project.optional-dependencies]
         postgresql = ["psycopg2-binary"]
         mysql = ["pymysql"]
+        clickhouse = ["clickhouse-driver", "clickhouse-connect"]
 
 [tool.hatch.version]
     path = "src/edne_correios_loader/__about__.py"
@@ -60,6 +61,8 @@
         "python-dotenv",
         "psycopg[binary]",
         "pymysql",
+        "clickhouse-driver",
+        "clickhouse-connect",
         "cryptography",
         "ruff",
         "testcontainers-postgres",
