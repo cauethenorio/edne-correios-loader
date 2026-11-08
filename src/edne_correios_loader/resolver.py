@@ -178,7 +178,7 @@ class DneResolver:
         download_path = Path(self.temp_dir) / "download.zip"
 
         try:
-            with urllib.request.urlopen(url) as response:  # noqa: S310
+            with urllib.request.urlopen(url, timeout=30) as response:  # noqa: S310
                 total_size = int(response.headers.get("Content-Length", -1))
                 self.download_report_hook(0, total_size, "start")
 
