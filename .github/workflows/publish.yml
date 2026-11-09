@@ -26,6 +26,8 @@ jobs:
     - uses: actions/checkout@v7.0.1
     - uses: astral-sh/setup-uv@v10.3.2
       with:
-        enable-cache: true
+        # No cache in the job that can publish to PyPI, so a poisoned cache
+        # can't reach the package (setup-uv's default for `release` events)
+        enable-cache: false
     - name: Build and publish to PyPI
       run: make publish
