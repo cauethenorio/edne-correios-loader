@@ -1,6 +1,7 @@
 # Version updates once a month, only for releases at least 14 days old: one
 # grouped PR per ecosystem for minor and patch updates, and a PR of its own
-# for each major. Security updates are not held back by the cooldown.
+# for each major. Security updates are not held back by the cooldown, and the
+# Python ones also come grouped in one PR.
 #
 # Neither ecosystem's PRs release anything. Python dependency PRs are
 # `chore(deps):` because they usually change only uv.lock, which isn't part of
@@ -20,6 +21,9 @@ updates:
       python-dependencies:
         patterns: ["*"]
         update-types: [minor, patch]
+      python-security:
+        applies-to: security-updates
+        patterns: ["*"]
     commit-message:
       prefix: chore(deps)
 
