@@ -2,9 +2,12 @@
 # grouped PR per ecosystem for minor and patch updates, and a PR of its own
 # for each major. Security updates are not held back by the cooldown.
 #
-# Python dependency PRs are `deps:`, which release-please lists under
-# Dependencies and releases as a patch. GitHub Actions PRs are `ci(deps):`,
-# which releases nothing: they never reach the package's users.
+# Neither ecosystem's PRs release anything. Python dependency PRs are
+# `chore(deps):` because they usually change only uv.lock, which isn't part of
+# the published package: users resolve versions from the ranges in
+# pyproject.toml. When one changes those ranges (e.g. a new major of a runtime
+# dependency), retitle it `deps:` so release-please releases it. GitHub
+# Actions PRs are `ci(deps):`: they never reach the package's users.
 version: 2
 updates:
   - package-ecosystem: uv
@@ -18,7 +21,7 @@ updates:
         patterns: ["*"]
         update-types: [minor, patch]
     commit-message:
-      prefix: deps
+      prefix: chore(deps)
 
   - package-ecosystem: github-actions
     directory: /
