@@ -397,6 +397,7 @@ wheels = [
 
 [[package]]
 name = "edne-correios-loader"
+version = "1.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
@@ -434,7 +435,7 @@ requires-dist = [
     { name = "pymysql", marker = "extra == 'mysql'" },
     { name = "sqlalchemy", specifier = "~=2.0" },
 ]
-provides-extras = ["mysql", "postgresql"]
+provides-extras = ["postgresql", "mysql"]
 
 [package.metadata.requires-dev]
 dev = [

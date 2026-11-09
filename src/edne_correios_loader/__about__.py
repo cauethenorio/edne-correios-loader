@@ -1,1 +1,3 @@
-__version__ = "1.2.0"
+from importlib.metadata import version
+
+__version__ = version("edne-correios-loader")

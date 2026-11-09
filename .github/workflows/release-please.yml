@@ -1,0 +1,36 @@
+# Push to main: release-please opens or updates the release PR from the
+# Conventional Commits merged since the last release. Merging that PR bumps
+# pyproject.toml, uv.lock and CHANGELOG.md, tags vX.Y.Z and creates the GitHub
+# Release, which starts publish.yml.
+#
+# It runs with a GitHub App token, not GITHUB_TOKEN: what GITHUB_TOKEN creates
+# starts no workflows, so the release PR would never get the checks that main's
+# branch protection requires, and the release would never start publish.yml.
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - id: app-token
+        uses: actions/create-github-app-token@v3.3.0
+        with:
+          client-id: ${{ secrets.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: googleapis/release-please-action@v5.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: .github/release-please-config.json
+          manifest-file: .github/release-please-manifest.json

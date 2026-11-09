@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := list
-.PHONY: test test-all test-cov lint fmt cov-report cov-xml list
+.PHONY: test test-all test-cov lint fmt cov-report cov-xml build publish list
 
 #: run tests (e.g. make test PY=3.14)
 test:
@@ -38,6 +38,15 @@ lint:
 fmt:
 	uv run ruff format .
 	uv run ruff check --fix .
+
+#: build sdist and wheel into dist/
+build:
+	rm -rf dist
+	uv build
+
+#: build and upload to PyPI (trusted publishing, CI only)
+publish: build
+	uv publish --trusted-publishing always
 
 #: list all available commands
 list:
