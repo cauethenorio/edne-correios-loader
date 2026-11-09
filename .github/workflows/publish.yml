@@ -23,9 +23,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-    - uses: actions/checkout@v5
-    - uses: astral-sh/setup-uv@v7
-      with:
-        enable-cache: true
+    - uses: actions/checkout@v7.0.1
+    - uses: astral-sh/setup-uv@v10.3.2
     - name: Build and publish to PyPI
       run: make publish
