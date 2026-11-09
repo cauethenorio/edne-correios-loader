@@ -217,27 +217,28 @@ the `edne_correios_loader` module. Example:
 from edne_correios_loader import DneLoader, TableSetEnum
 
 DneLoader(
-  # Database connection URL (required)
-  'postgresql://user:pass@localhost:5432/mydb',
-  # Path or URL to the ZIP file or directory with e-DNE files (optional)
-  # When omitted, the e-DNE will be automatically downloaded from the Correios website
-  dne_source="/path/to/dne.zip",
-  # Customize table names in the database (optional)
-  # Accepts a dict or a callable that transforms the names
-  table_names={"cep_unificado": "correios_cep"},
+    # Database connection URL (required)
+    "postgresql://user:pass@localhost:5432/mydb",
+    # Path or URL to the ZIP file or directory with e-DNE files (optional)
+    # When omitted, the e-DNE will be automatically downloaded from the Correios website
+    dne_source="/path/to/dne.zip",
+    # Customize table names in the database (optional)
+    # Accepts a dict or a callable that transforms the names
+    table_names={"cep_unificado": "correios_cep"},
 ).load(
-  # define the tables to keep in the database after the import (optional)
-  # When omitted, only the unified table is kept
-  # Other options are TableSetEnum.CEP_TABLES and TableSetEnum.ALL
-  table_set=TableSetEnum.CEP_TABLES
+    # define the tables to keep in the database after the import (optional)
+    # When omitted, only the unified table is kept
+    # Other options are TableSetEnum.CEP_TABLES and TableSetEnum.ALL
+    table_set=TableSetEnum.CEP_TABLES
 )
 ```
 
 The `table_names` parameter also accepts a callable to transform all names:
 ```python
 DneLoader(
-  'sqlite:///dne.db',
-  table_names=lambda name: f"dne_{name}",  # dne_cep_unificado, dne_log_localidade, etc.
+    "sqlite:///dne.db",
+    # dne_cep_unificado, dne_log_localidade, etc.
+    table_names=lambda name: f"dne_{name}",
 ).load()
 ```
 
@@ -247,20 +248,20 @@ from edne_correios_loader import CepQuerier
 
 # If the table was renamed, provide the custom name
 cep_querier = CepQuerier(
-  'postgresql://user:pass@localhost:5432/mydb',
-  cep_table_name='correios_cep',  # optional, default: 'cep_unificado'
+    "postgresql://user:pass@localhost:5432/mydb",
+    cep_table_name="correios_cep",  # optional, default: 'cep_unificado'
 )
-cep = cep_querier.query('01319010')
+cep = cep_querier.query("01319010")
 
 assert cep == {
-  'cep': '79290000',
-  'logradouro': None,
-  'complemento': None,
-  'bairro': None,
-  'municipio': 'Bonito',
-  'municipio_cod_ibge': 5002209,
-  'uf': 'MS',
-  'nome': None
+    "cep": "79290000",
+    "logradouro": None,
+    "complemento": None,
+    "bairro": None,
+    "municipio": "Bonito",
+    "municipio_cod_ibge": 5002209,
+    "uf": "MS",
+    "nome": None,
 }
 ```
 
