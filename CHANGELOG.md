@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/cauethenorio/edne-correios-loader/compare/v1.2.0...v1.2.1) (2026-11-09)
+
+
+### Documentation
+
+* normalize changelog to release-please's format ([#19](https://github.com/cauethenorio/edne-correios-loader/issues/19)) ([cc0af7c](https://github.com/cauethenorio/edne-correios-loader/commit/cc0af7c935e9dfc7b6417d5b1dfda59b49052d31))
+* split intro paragraph for readability ([7df349c](https://github.com/cauethenorio/edne-correios-loader/commit/7df349c3d33c3084888ef829bce2cc56035cdbe1))
+
 ## [1.2.0](https://github.com/cauethenorio/edne-correios-loader/compare/1.1.0...v1.2.0) (2026-03-05)
 
 
