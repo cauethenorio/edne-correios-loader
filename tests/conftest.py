@@ -22,7 +22,7 @@ load_dotenv()
 ### dbs
 
 
-def get_external_connection_url(prefix, user, password, db, port, host):
+def get_external_connection_url(prefix, *, user, password, db, port, host):
     """
     Build a connection url from environment variables if they are defined.
     If true, probably there are docker containers running the databases.
