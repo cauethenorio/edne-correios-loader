@@ -4,7 +4,7 @@
 
 [project]
     name = "edne-correios-loader"
-    dynamic = ["version"]
+    version = "1.2.0"
     description = "Load Brazilian Correios' e-DNE Basico text files into your database to enable CEP search"
     readme = "README.md"
     requires-python = ">=3.10"
@@ -33,6 +33,7 @@
         Documentation = "https://github.com/cauethenorio/edne-correios-loader#readme"
         Issues = "https://github.com/cauethenorio/edne-correios-loader/issues"
         Source = "https://github.com/cauethenorio/edne-correios-loader"
+        Changelog = "https://github.com/cauethenorio/edne-correios-loader/blob/main/CHANGELOG.md"
 
     [project.scripts]
         edne-correios-loader = "edne_correios_loader.cli:edne_correios_loader"
@@ -40,9 +41,6 @@
     [project.optional-dependencies]
         postgresql = ["psycopg2-binary"]
         mysql = ["pymysql"]
-
-[tool.hatch.version]
-    path = "src/edne_correios_loader/__about__.py"
 
 [tool.hatch.build.targets.sdist]
     exclude = ["/tests", '.gitignore', '.rtx.toml']
