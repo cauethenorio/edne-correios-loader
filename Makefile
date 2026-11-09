@@ -1,13 +1,13 @@
 .DEFAULT_GOAL := list
 .PHONY: test test-all test-cov lint fmt cov-report cov-xml build publish list
 
-#: run tests (e.g. make test PY=3.14)
+#: run tests (e.g. make test PY=3.15)
 test:
 	uv run $(if $(PY),--python $(PY)) pytest tests
 
 #: run tests on all compatible python versions
 test-all:
-	@for v in 3.10 3.11 3.12 3.13 3.14; do \
+	@for v in 3.10 3.11 3.12 3.13 3.14 3.15; do \
 		echo "=== Python $$v ==="; \
 		uv run --python $$v pytest tests || exit 1; \
 	done
