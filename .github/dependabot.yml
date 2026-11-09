@@ -1,0 +1,34 @@
+# Version updates once a month, only for releases at least 14 days old: one
+# grouped PR per ecosystem for minor and patch updates, and a PR of its own
+# for each major. Security updates are not held back by the cooldown.
+#
+# Python dependency PRs are `deps:`, which release-please lists under
+# Dependencies and releases as a patch. GitHub Actions PRs are `ci(deps):`,
+# which releases nothing: they never reach the package's users.
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 14
+    groups:
+      python-dependencies:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    commit-message:
+      prefix: deps
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 14
+    groups:
+      github-actions:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    commit-message:
+      prefix: ci(deps)
