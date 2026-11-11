@@ -5,7 +5,10 @@ from edne_correios_loader.tables import (
     TipoLocalidadeEnum,
     metadata,
 )
-from edne_correios_loader.unified_table import populate_unified_table
+from edne_correios_loader.unified_table import (
+    cep_unificado_insert_in_batches,
+    populate_unified_table,
+)
 
 
 def test_populate_unified_table_populates_correctly(connection_url):
@@ -363,3 +366,31 @@ def test_populate_unified_table_populates_correctly(connection_url):
                 "nome": uop_ba["uop_no"],
             },
         ]
+
+
+def test_cep_unificado_insert_in_batches_with_default_batch_size(connection_url):
+    # Oracle has no multi-row VALUES: full batches must still go in
+    unified_table = metadata.tables["cep_unificado"]
+    rows = [
+        {
+            "cep": f"{i:08d}",
+            "logradouro": f"Rua {i}",
+            "complemento": None,
+            "bairro": "Centro",
+            "municipio": "Ipiranga do Bom Jesus",
+            "municipio_cod_ibge": 334455,
+            "uf": "SP",
+            "nome": None,
+        }
+        for i in range(600)
+    ]
+
+    with sa.create_engine(connection_url).connect() as connection:
+        unified_table.create(connection)
+        cep_unificado_insert_in_batches(connection, unified_table, rows)
+
+        count = connection.execute(
+            sa.select(sa.func.count()).select_from(unified_table)
+        ).scalar_one()
+
+    assert count == len(rows)
