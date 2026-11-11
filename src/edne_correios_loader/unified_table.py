@@ -40,12 +40,12 @@ def cep_unificado_insert_in_batches(
 
         if len(batch) == batch_size:
             logger.debug("Inserting %d rows into cep_unificado", len(batch))
-            conn.execute(cep_unificado.insert().values(batch))
+            conn.execute(cep_unificado.insert(), batch)
             batch = []
 
     if batch:
         logger.debug("Inserting %d rows into cep_unificado", len(batch))
-        conn.execute(cep_unificado.insert().values(batch))
+        conn.execute(cep_unificado.insert(), batch)
 
 
 def select_logradouros_ceps(metadata) -> "sa.Select":

@@ -196,7 +196,7 @@ def build_metadata(table_names: TableNameResolver | None = None) -> MetaData:
         ),
         Column(
             "loc_nu_sub",
-            ForeignKey(n("log_localidade") + ".loc_nu", ondelete="NO ACTION"),
+            ForeignKey(n("log_localidade") + ".loc_nu"),
             index=True,
             comment="Chave da localidade de subordinação",
         ),
