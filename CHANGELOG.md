@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/cauethenorio/edne-correios-loader/compare/v1.2.1...v1.3.0) (2026-11-11)
+
+
+### Features
+
+* add Python 3.15 support ([#37](https://github.com/cauethenorio/edne-correios-loader/issues/37)) ([3bb535a](https://github.com/cauethenorio/edne-correios-loader/commit/3bb535a1f42de61817815265358d8a1c69b00e4c))
+
+
+### Bug Fixes
+
+* make table creation and the unified table insert work on Oracle ([#39](https://github.com/cauethenorio/edne-correios-loader/issues/39)) ([7e0e75e](https://github.com/cauethenorio/edne-correios-loader/commit/7e0e75e649fdda665d7dd9e459ea33b931f13ced))
+
 ## [1.2.1](https://github.com/cauethenorio/edne-correios-loader/compare/v1.2.0...v1.2.1) (2026-11-09)
 
 
