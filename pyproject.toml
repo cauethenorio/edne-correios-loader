@@ -4,7 +4,7 @@
 
 [project]
     name = "edne-correios-loader"
-    version = "1.2.1"
+    version = "1.3.0"
     description = "Load Brazilian Correios' e-DNE Basico text files into your database to enable CEP search"
     readme = "README.md"
     requires-python = ">=3.10"
